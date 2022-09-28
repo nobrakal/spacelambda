@@ -1,0 +1,9 @@
+(coq.theory
+ (name glaneur)
+ (synopsis "TODO")
+ (modules :standard )
+ ; TODO use :standard, when achieving to a stable development
+ (flags -w -implicits-in-term,-redundant-canonical-projection,-several-object-files,-ambiguous-paths,-implicit-core-hint-db,-file-no-extension,-custom-entry-overriden,-custom-entry-overridden,-deprecated-hint-without-locality,-deprecated-ident-entry,-deprecated-hint-rewrite-without-locality,-deprecated-instance-without-locality)
+)
+
+(include_subdirs qualified)
