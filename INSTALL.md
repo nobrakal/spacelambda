@@ -1,7 +1,5 @@
 # Setup & Build instruction.
 
-## Generalities
-
 This project needs [opam](https://opam.ocaml.org/doc/Install.html) to
 install dependencies.
 This project uses the [dune](https://dune.build/) build system.

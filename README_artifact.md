@@ -9,12 +9,26 @@ The files we refer to in this documentation appear in the virtual machine
 
   https://gitlab.inria.fr/amoine/spacelambda
 
-## List of claims
+## Generalities
 
-This is a list of the claims that are made in the article, and for each claim,
-where to find the corresponding proof.
+All the development is made with Weakest Preconditions (WP) rather
+than triples.
+
+Code pointers are expressed with notation µ λ and application of terms
+u and v as (u v).
+Closure creation uses the syntax `mk_clo` and closure call the syntax
+`call_clo`.
+
+Code pointers must contain no locations. The syntax does not actually
+forbid it, so a side-condition locs(t) = ∅ appears from time to time.
+
+## List of definitions & claims
+
+This is a list of the definitions & claims that are made in the
+article, and for each claim, where to find the corresponding proof.
 
 XXX
+
 
 ## Download, installation, sanity-testing
 
