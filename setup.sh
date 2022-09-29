@@ -25,9 +25,11 @@ opam install coq.8.15.2
 echo "Installing stdpp & Iris"
 opam install coq-stdpp.1.7.0 coq-iris.3.6.0 coq-iris-heap-lang.3.6.0
 
+eval $(opam env)
+
 echo "Installing diaframe"
 wget "https://gitlab.mpi-sws.org/iris/diaframe/-/archive/c84cba84ce7af4da46fe86fb0f3d3dd1e3ed7ba4/diaframe-c84cba84ce7af4da46fe86fb0f3d3dd1e3ed7ba4.tar.gz" -O diaframe.tar.gz
-tar zxvf diaframe.tar.gz --one-top-level=project --strip-components 1
+tar zxvf diaframe.tar.gz --one-top-level=diaframe --strip-components 1
 cd diaframe
 make real-install
 cd ..

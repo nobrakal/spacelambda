@@ -15,6 +15,7 @@ then
   echo "*** Installing opam ***"
   sh <(wget -O- https://raw.githubusercontent.com/ocaml/opam/master/shell/install.sh)
   opam init
+  eval `opam config env`
 else
   echo "Opam available"
 fi
@@ -25,9 +26,6 @@ tar zxvf project.tar.gz --one-top-level=project --strip-components 1
 cd project/
 
 ./setup.sh
-
-echo "*** Installing coqide ***"
-opam install coqide
 
 echo "*** Compile the project ***"
 echo "If an error appears here, try to open a new terminal and run:"
