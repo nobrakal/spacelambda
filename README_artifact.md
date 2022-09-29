@@ -51,6 +51,26 @@ article, and for each claim, where to find the corresponding proof.
   + Rule Store: Lemma `wp_store` in `wp_store.v`
 * Section 4.6:
   + Rule Cleanup: Lemma `mapsfrom_cleanup` in `interp.v`
+* Figure 6:
+  + Rule BindWithSouvenir: Lemma `wpc_bind` in `wpc.v`
+  + Rule AddSouvenir: Lemma `wpc_context_singleton` in `wpc.v`
+  + Rule ForgetSouvenir: Lemma `wpc_weak` in `wpc.v`
+* Figure 7:
+  + Rule BindNoFree: Lemma `wps_bind_nofree` in `wps.v`
+  + Rule ConseqMode: Lemma `wps_conseq` in `wps.v`
+* Section 5.2:
+  + Rule ConseqWithSouvenir: Lemma `wpc_conseq` in `wpc.v`
+  + Rule UpdateWithSouvenir: Lemma `supd_simpl` in `wp.v`
+* Theorem 6.1:
+  Lemma `wp_adequacy` in `wp_adequacy.v`
+* Figure 8:
+  + Rule MkClo: Lemma `wp_mk_clo` in `wp_closure.v`
+  + Rule CallClo: Lemma `wp_call_clo` in `wp_closure.v`
+  + Rule FreeClo: Lemma `closure_free` in `wp_closure.v`
+* Figure 9:
+  + Rule MkSpec: Lemma `wp_mk_spec` in `wp_spec.v`
+  + Rule CallClo: Lemma `wp_call_spec` in `wp_spec.v`
+  + Rule FreeClo: Lemma `spec_free` in `wp_spec.v`
 
 
 ## Download, installation, sanity-testing
