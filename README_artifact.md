@@ -27,7 +27,30 @@ forbid it, so a side-condition locs(t) = ∅ appears from time to time.
 This is a list of the definitions & claims that are made in the
 article, and for each claim, where to find the corresponding proof.
 
-XXX
+* Figure 2: `language/syntax.v`
+* Figure 3: `language/head_semantics.v`
+* Figure 4:
+  + GC relation: `language/gc.v`
+  + reduction relation: `language/semantics.v`
+* Section 4.1:
+  + Rule Conseq: Lemma `wp_conseq` in `wp.v`
+  + Rule Frame: Lemma `wp_frame` in `wp.v`
+* Section 4.2:
+  + Rule LogicalFree: Lemma `logical_free` in `interp.v`
+* Section 4.3:
+  + Rule SplitPointedBy: Lemma `mapsfrom_split` in `ph.v`
+  + Rule JoinPointedBy: Lemma `mapsfrom_join` in `ph.v`
+* Figure 5:
+  + Rule BinOp: Lemma `wp_bin_op` in `wp_bin_op.v`
+  + Rules IfTrue, IfFalse: Lemma `wp_if` in `wp.v`
+  + Rule Bind: Lemma `wp_bind` in `wp.v`
+  + Rule LetVal: Lemma `wp_let_val` in `wp.v`
+  + Rule CallPtr: Lemma `wp_call` in `wp_call.v`
+  + Rule Alloc: Lemma `wp_alloc` in `wp_alloc.v`
+  + Rule Load: Lemma `wp_load` in `wp_load.v`
+  + Rule Store: Lemma `wp_store` in `wp_store.v`
+* Section 4.6:
+  + Rule Cleanup: Lemma `mapsfrom_cleanup` in `interp.v`
 
 
 ## Download, installation, sanity-testing
