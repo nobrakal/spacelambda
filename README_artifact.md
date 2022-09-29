@@ -9,7 +9,6 @@ The files we refer to in this documentation appear in the virtual machine
 
   https://gitlab.inria.fr/amoine/spacelambda
 
-
 ## List of claims
 
 This is a list of the claims that are made in the article, and for each claim,
