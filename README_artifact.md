@@ -25,9 +25,9 @@ The file `artifact.ova` provided with this documentation can be
 imported into VirtualBox 6.1 through File > Import Appliance.
 The VM's login and password are both "user", although no login should be required.
 
-Inside the VM, one can open file e.g. `adequacy.v` by opening a terminal
-(Ctrl-Alt-T) and typing `coqide project/src/adequacy.v`. Replace `coqide` with
-`emacs` to run Proof General instead.
+Inside the VM, one can open file e.g. `wp_adequacy.v` by opening a terminal
+(Ctrl-Alt-T) and typing `opam exec -- coqide project/src/wp_adequacy.v`.
+Replace `coqide` with `emacs` to run Proof General instead.
 
 ### Option 2: installation for OPAM users
 
