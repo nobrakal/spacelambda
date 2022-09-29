@@ -10,6 +10,7 @@ From spacelambda Require Import interp.
 From spacelambda Require Import more_space_lang wp_all wpc triple.
 
 From spacelambda.examples.tactics Require Import tactics.
+From spacelambda.examples.lib Require Import utils.
 From spacelambda.examples.list Require Import list.
 
 (* ------------------------------------------------------------------------ *)
@@ -201,3 +202,34 @@ Proof.
 Qed.
 
 End RevPreserving.
+
+Section PaperRevAppend.
+
+Import Lists.
+Context `{interpGS Σ}.
+
+Lemma list_rev_append_destructive_spec Lxs xs Lys ys :
+  CODE (list_rev_append [[xs,ys]])
+  PRE (List Lxs xs ∗ xs ↩ ∅ ∗
+       List Lys ys ∗ ys ↩ ∅)
+  POST (fun (zs:loc) => List (rev Lxs ++ Lys) zs ∗ zs ↩ ∅ ∗ ♢1 ).
+Proof.
+  rewrite !hooked_one. simpl.
+  iIntros "(?&(?&?)&?&(?&?))".
+  wps_apply list_rev_append_spec_.
+  rewrite !hooked_one. iStepsS.
+Qed.
+
+Lemma list_rev_append_preserving_spec Lxs xs Lys ys :
+  CODE (list_rev_append [[xs,ys]])
+  SOUV {[xs]}
+  PRE (♢ (3 * length Lxs) ∗ List Lxs xs ∗
+       List Lys ys ∗ ys ↩ ∅)
+  POST (fun (zs:loc) => List (rev (halves Lxs) ++ Lys) zs ∗ zs ↩ ∅ ∗ List (halves Lxs) xs).
+Proof.
+  rewrite !hooked_one. simpl.
+  iIntros "(?&?&?&(?&?))".
+  wps_apply list_rev_append_spec'.
+  rewrite !hooked_one. iStepsS.
+Qed.
+End PaperRevAppend.

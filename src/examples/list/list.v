@@ -257,27 +257,19 @@ End Lists.
 Module PaperLists.
 Import Lists.
 
-Definition List `{!interpGS Σ} (xs:list (val*Qp)) l : iProp Σ :=
+Context `{interpGS Σ}.
+
+Definition List (xs:list (val*Qp)) l : iProp Σ :=
   List (dupf <$> xs) l.
 
-Fixpoint List_alt `{!interpGS Σ} (xs:list (val*Qp)) l : iProp Σ :=
+Fixpoint List_alt (xs:list (val*Qp)) l : iProp Σ :=
   match xs with
   | [] => l ↦ BBlock [ ^0 ]
   | (v,p) :: xs =>
     ∃ l', l ↦ BBlock [ ^1; v; #l'] ∗ v ↩{p} {[+l+]} ∗ l' ↩ {[+l+]} ∗ List_alt  xs l'
 end.
 
-Lemma one_qp_qz : (1%Qp : Qz) = 1%Qz.
-Proof. compute_done. Qed.
-
-Lemma hooked_one `{!interpGS Σ} l vs :
-  handle l 1%Qp vs ≡ (l ↤?{1} vs ∗ vStackable l 1%Qp : iProp Σ)%I.
-Proof.
-  rewrite /handle one_qp_qz.
-  iSplit; iSmash.
-Qed.
-
-Lemma List_is_List_alt `{!interpGS Σ} (xs:list (val*Qp)) l :
+Lemma List_is_List_alt (xs:list (val*Qp)) l :
   List xs l ≡ List_alt xs l.
 Proof.
   iRevert (l).
@@ -293,13 +285,13 @@ Proof.
       iSplitR; eauto. iApply "IH". iFrame. } }
 Qed.
 
-Lemma list_nil_spec `{!interpGS Σ} :
+Lemma list_nil_spec :
   CODE (list_nil [[]])
   PRE  (♢ 1)
   POST (fun (l:loc) => List [] l ∗ l ↩ ∅).
 Proof. iIntros. wps_apply list_nil_spec. rewrite hooked_one. iStepsS. Qed.
 
-Lemma list_cons_spec `{!interpGS Σ} l qp v xs :
+Lemma list_cons_spec l qp v xs :
   CODE (list_cons [[v,l]])
   PRE  (♢ 3 ∗ List xs l ∗ l ↩ ∅ ∗ v ↩{qp} ∅)
   POST (fun (l':loc) => List ((v,qp)::xs) l' ∗ l' ↩ ∅).
@@ -310,7 +302,7 @@ Proof.
   rewrite one_qp_qz. iStepsS. rewrite one_qp_qz. iStepsS.
 Qed.
 
-Lemma list_is_nil_spec `{!interpGS Σ} l vs :
+Lemma list_is_nil_spec l vs :
   CODE (list_is_nil [[l]])
   PRE  (List vs l)
   POST (fun (n:nat) => ⌜n ≠ 0 <-> vs = nil⌝ ∗ List vs l).
@@ -320,10 +312,10 @@ Proof.
   destruct vs; naive_solver.
 Qed.
 
-Definition Beheaded `{!interpGS Σ} v xs l : iProp Σ:=
+Definition Beheaded v xs l : iProp Σ:=
   ∃ l', l ↦ BBlock [ ^1; v; #l'] ∗ l' ↩ {[+l+]} ∗ List xs l'.
 
-Lemma list_head_spec `{!interpGS Σ} l qp x xs :
+Lemma list_head_spec l qp x xs :
   CODE (list_head [[l]])
   PRE  (List ((x,qp)::xs) l)
   POST (fun v => ⌜x=v⌝ ∗ v ↤?{qp} {[+l+]} ∗ vStackable v qp ∗ Beheaded v xs l).
@@ -333,7 +325,7 @@ Proof.
   rewrite /Beheaded. iFrame. iExists _. rewrite hooked_one. iStepsS.
 Qed.
 
-Lemma list_tail_spec `{!interpGS Σ} v l xs :
+Lemma list_tail_spec v l xs :
   CODE (list_tail [[l]])
   PRE (Beheaded v xs l)
   POST (fun (l':loc) => List xs l' ∗ l' ↩ {[+l+]} ∗ l↦ BBlock [ ^1 ; v ; #l']%V).
@@ -342,7 +334,7 @@ Proof.
   iSplitL; iStepsS; rewrite one_qp_qz; iStepsS.
 Qed.
 
-Lemma list_free `{!interpGS Σ} l xs :
+Lemma list_free l xs :
   List xs l ∗ l ↩ ∅ =[true | ∅]=∗
   ♢(1+3*length xs) ∗ †l ∗
   ([∗ list] x ∈ xs, (fst x) ↩{snd x} ∅).

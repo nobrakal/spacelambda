@@ -73,3 +73,10 @@ Notation "v ↩{ p } ls" := (handle v p ls)
   (at level 20, p at level 50, format "v  ↩{ p }  ls") : bi_scope.
 Notation "v ↩ ls" := (handle v (1%Qp) ls)
   (at level 20, format "v  ↩  ls") : bi_scope.
+
+Lemma one_qp_qz : (1%Qp : Qz) = 1%Qz.
+Proof. compute_done. Qed.
+
+Lemma hooked_one `{interpGS Σ} l vs :
+  handle l 1%Qp vs = (l ↤?{1} vs ∗ vStackable l 1%Qp : iProp Σ)%I.
+Proof. rewrite /handle one_qp_qz //. Qed.

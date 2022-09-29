@@ -71,6 +71,14 @@ article, and for each claim, where to find the corresponding proof.
   + Rule MkSpec: Lemma `wp_mk_spec` in `wp_spec.v`
   + Rule CallClo: Lemma `wp_call_spec` in `wp_spec.v`
   + Rule FreeClo: Lemma `spec_free` in `wp_spec.v`
+* Figure 10:
+  + First specification: Lemma `list_rev_append_preserving_spec` in
+	`examples/list/list_rev.v`
+  + Second specification: Lemma `list_rev_append_destructive_spec` in
+    `examples/list/list_rev.v`
+* Figure 11:
+  + `append` : Definition `cps_append` in `examples/cps/cps_append.v`
+  + `mkcounter` : Definition `mk_counter` in `examples/counter/counter.v`
 
 ## Download, installation, sanity-testing
 
