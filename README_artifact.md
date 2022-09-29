@@ -72,7 +72,6 @@ article, and for each claim, where to find the corresponding proof.
   + Rule CallClo: Lemma `wp_call_spec` in `wp_spec.v`
   + Rule FreeClo: Lemma `spec_free` in `wp_spec.v`
 
-
 ## Download, installation, sanity-testing
 
 ### Option 1: virtual machine

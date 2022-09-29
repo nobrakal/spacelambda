@@ -65,3 +65,11 @@ Proof.
   simpl. unfold soup. simpl. iIntros "((% & ? & ?) & ?)". subst.
   iFrame. iApply "IH". iFrame.
 Qed.
+
+Definition handle `{interpGS Σ} (v:val) (p:Qp) (ls:smultiset loc) : iProp Σ :=
+  v ↤?{p} ls ∗ vStackable v p.
+
+Notation "v ↩{ p } ls" := (handle v p ls)
+  (at level 20, p at level 50, format "v  ↩{ p }  ls") : bi_scope.
+Notation "v ↩ ls" := (handle v (1%Qp) ls)
+  (at level 20, format "v  ↩  ls") : bi_scope.

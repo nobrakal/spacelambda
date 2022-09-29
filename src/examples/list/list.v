@@ -260,20 +260,54 @@ Import Lists.
 Definition List `{!interpGS Σ} (xs:list (val*Qp)) l : iProp Σ :=
   List (dupf <$> xs) l.
 
+Fixpoint List_alt `{!interpGS Σ} (xs:list (val*Qp)) l : iProp Σ :=
+  match xs with
+  | [] => l ↦ BBlock [ ^0 ]
+  | (v,p) :: xs =>
+    ∃ l', l ↦ BBlock [ ^1; v; #l'] ∗ v ↩{p} {[+l+]} ∗ l' ↩ {[+l+]} ∗ List_alt  xs l'
+end.
+
+Lemma one_qp_qz : (1%Qp : Qz) = 1%Qz.
+Proof. compute_done. Qed.
+
+Lemma hooked_one `{!interpGS Σ} l vs :
+  handle l 1%Qp vs ≡ (l ↤?{1} vs ∗ vStackable l 1%Qp : iProp Σ)%I.
+Proof.
+  rewrite /handle one_qp_qz.
+  iSplit; iSmash.
+Qed.
+
+Lemma List_is_List_alt `{!interpGS Σ} (xs:list (val*Qp)) l :
+  List xs l ≡ List_alt xs l.
+Proof.
+  iRevert (l).
+  iInduction xs as [|(v,p) xs] "IH"; iIntros (l).
+  { iSplit; iSmash. }
+  { rewrite /List /Lists.List ListsOf.ListOf_eq.
+    iSplit.
+    { iIntros "[% [% (? & % & ? & ? & ? & ? & ?)]]". subst. iExists _.
+      rewrite hooked_one. iFrame.
+      iApply "IH". iFrame. }
+    { iIntros "[% (? & (? & ?) & (? & ?) & ?)]". simpl. iExists _,_.
+      iFrame. rewrite one_qp_qz. iFrame.
+      iSplitR; eauto. iApply "IH". iFrame. } }
+Qed.
+
 Lemma list_nil_spec `{!interpGS Σ} :
   CODE (list_nil [[]])
   PRE  (♢ 1)
-  POST (fun (l:loc) => List [] l ∗ Stackable l 1%Qp ∗ l ↤ ∅).
-Proof. iIntros. wps_apply list_nil_spec. iFrame. Qed.
+  POST (fun (l:loc) => List [] l ∗ l ↩ ∅).
+Proof. iIntros. wps_apply list_nil_spec. rewrite hooked_one. iStepsS. Qed.
 
 Lemma list_cons_spec `{!interpGS Σ} l qp v xs :
   CODE (list_cons [[v,l]])
-  PRE  (♢ 3 ∗ List xs l ∗ Stackable l 1%Qp ∗ l ↤ ∅ ∗  vStackable v qp ∗ v ↤?{qp} ∅)
-  POST (fun (l':loc) => List ((v,qp)::xs) l' ∗ Stackable l' 1%Qp ∗ l' ↤ ∅).
+  PRE  (♢ 3 ∗ List xs l ∗ l ↩ ∅ ∗ v ↩{qp} ∅)
+  POST (fun (l':loc) => List ((v,qp)::xs) l' ∗ l' ↩ ∅).
 Proof.
-  iIntros "(? & ? & ? & ? & ? & ?)".
-  wps_apply list_cons_spec; eauto.
+  iIntros "(? & ? & (? & ?) & ? & ?)".
+  wps_apply list_cons_spec as "(? & ? & ?)"; eauto.
   intros. apply Qp_to_Qz_ne_zero.
+  rewrite one_qp_qz. iStepsS. rewrite one_qp_qz. iStepsS.
 Qed.
 
 Lemma list_is_nil_spec `{!interpGS Σ} l vs :
@@ -287,26 +321,33 @@ Proof.
 Qed.
 
 Definition Beheaded `{!interpGS Σ} v xs l : iProp Σ:=
-  ∃ l', l ↦ BBlock [ ^1; v; #l'] ∗ Stackable l' 1%Qp ∗ l' ↤ {[+l+]} ∗ List xs l'.
+  ∃ l', l ↦ BBlock [ ^1; v; #l'] ∗ l' ↩ {[+l+]} ∗ List xs l'.
 
 Lemma list_head_spec `{!interpGS Σ} l qp x xs :
   CODE (list_head [[l]])
   PRE  (List ((x,qp)::xs) l)
   POST (fun v => ⌜x=v⌝ ∗ v ↤?{qp} {[+l+]} ∗ vStackable v qp ∗ Beheaded v xs l).
-Proof. iIntros. wps_apply list_head_spec. iFrame. Qed.
+Proof.
+  iIntros.
+  wps_apply list_head_spec as "(? & ? & ? & [% (? & ? & ? & ?)])".
+  rewrite /Beheaded. iFrame. iExists _. rewrite hooked_one. iStepsS.
+Qed.
 
 Lemma list_tail_spec `{!interpGS Σ} v l xs :
   CODE (list_tail [[l]])
   PRE (Beheaded v xs l)
-  POST (fun (l':loc) => List xs l' ∗ Stackable l' 1%Qp ∗ l' ↤ {[+l+]} ∗ l↦ BBlock [ ^1 ; v ; #l']%V).
-Proof.  iIntros. wps_apply list_tail_spec. iFrame. Qed.
+  POST (fun (l':loc) => List xs l' ∗ l' ↩ {[+l+]} ∗ l↦ BBlock [ ^1 ; v ; #l']%V).
+Proof.
+  iIntros "?". wps_apply list_tail_spec.
+  iSplitL; iStepsS; rewrite one_qp_qz; iStepsS.
+Qed.
 
 Lemma list_free `{!interpGS Σ} l xs :
-  Stackable l 1%Qp ∗ l ↤ ∅ ∗ List xs l =#=∗
+  List xs l ∗ l ↩ ∅ =[true | ∅]=∗
   ♢(1+3*length xs) ∗ †l ∗
-  ([∗ list] x ∈ xs, fst x ↤?{snd x:Qp} ∅ ∗ vStackable (fst x) (snd x)).
+  ([∗ list] x ∈ xs, (fst x) ↩{snd x} ∅).
 Proof.
-  iIntros "(? & ? & ?)". iIntros.
+  iIntros "(? & ? & ?)". iIntros. simpl. rewrite one_qp_qz.
   iMod (list_free with "[$] [$]") as "(? & ? & ? & [% ?])".
   rewrite fmap_length. iFrame. iModIntro.
   iApply soup_mixer. iFrame.
