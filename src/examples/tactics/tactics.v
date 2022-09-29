@@ -3,14 +3,14 @@ From iris.algebra Require Import gmap auth.
 
 From iris.proofmode Require Import coq_tactics tactics reduction spec_patterns intro_patterns.
 
-From glaneur.fracz Require Import qz smultiset.
-From glaneur.language Require Import notation closure.
-From glaneur Require Import interp triple.
+From spacelambda.fracz Require Import qz smultiset.
+From spacelambda.language Require Import notation closure.
+From spacelambda Require Import interp triple.
 
-From glaneur Require Import wpc more_space_lang wp_all.
-From glaneur Require Import wp_spec wpc.
+From spacelambda Require Import wpc more_space_lang wp_all.
+From spacelambda Require Import wp_spec wpc.
 
-From glaneur.examples Require Export diaframe.
+From spacelambda.examples Require Export diaframe.
 
 (******************************************************************************)
 (* LNE *)

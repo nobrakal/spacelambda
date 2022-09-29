@@ -1,10 +1,10 @@
 From iris.proofmode Require Export proofmode.
 
-From glaneur.fracz Require Import qz smultiset.
-From glaneur.language Require Import language.
-From glaneur.spacelang Require Import predecessors.
+From spacelambda.fracz Require Import qz smultiset.
+From spacelambda.language Require Import language.
+From spacelambda.spacelang Require Import predecessors.
 
-From glaneur Require Import ph interp.
+From spacelambda Require Import ph interp.
 
 (* ------------------------------------------------------------------------ *)
 

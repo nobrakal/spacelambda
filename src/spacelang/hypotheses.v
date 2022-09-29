@@ -1,7 +1,7 @@
 From stdpp Require Import gmap gmultiset.
 From iris.proofmode Require Import proofmode.
 
-From glaneur.spacelang Require Import stdpp.
+From spacelambda.spacelang Require Import stdpp.
 
 (* This file defines a small set of hypotheses about locations and blocks.
    The files successors.v and predecessors.v depend on these hypotheses. *)

@@ -1,7 +1,7 @@
 From stdpp Require Import base gmap gmultiset.
 
-From glaneur.spacelang Require Import stdpp hypotheses successors.
-From glaneur Require Export syntax.
+From spacelambda.spacelang Require Import stdpp hypotheses successors.
+From spacelambda Require Export syntax.
 
 (* This file defines stores and machine stores. *)
 

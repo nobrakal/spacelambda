@@ -1,5 +1,5 @@
 From stdpp Require Import base.
-From glaneur.language Require Import head_semantics gc.
+From spacelambda.language Require Import head_semantics gc.
 
 (* ------------------------------------------------------------------------ *)
 (* The semantics of SpaceLamba, a reduction interleaving distant steps and gc. *)

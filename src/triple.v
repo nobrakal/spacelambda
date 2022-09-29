@@ -2,12 +2,12 @@ From iris.proofmode Require Import base proofmode classes.
 From iris.algebra Require Import gmap auth.
 From stdpp Require Import gmap gmultiset.
 
-From glaneur.spacelang Require Import successors predecessors.
-From glaneur.language Require Import language notation.
-From glaneur.fracz Require Import qz qz_cmra.
-From glaneur Require Import ph wp interp.
+From spacelambda.spacelang Require Import successors predecessors.
+From spacelambda.language Require Import language notation.
+From spacelambda.fracz Require Import qz qz_cmra.
+From spacelambda Require Import ph wp interp.
 
-From glaneur Require Export wps.
+From spacelambda Require Export wps.
 
 Definition triple `{interpGS Σ} `{Enc A} (r:option (gset loc)) (H:iProp Σ) (t:tm) (Q:A -> iProp Σ) : Prop :=
   (H ⊢ wps r t Q)%I.

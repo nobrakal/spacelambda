@@ -2,12 +2,12 @@ From iris.proofmode Require Import base proofmode classes.
 From iris.algebra Require Import gmap auth.
 From stdpp Require Import gmap gmultiset.
 
-From glaneur.fracz Require Import qz smultiset.
-From glaneur.spacelang Require Import successors predecessors.
-From glaneur.language Require Import language.
+From spacelambda.fracz Require Import qz smultiset.
+From spacelambda.spacelang Require Import successors predecessors.
+From spacelambda.language Require Import language.
 
-From glaneur Require Import more_maps_and_sets more_space_lang.
-From glaneur Require Import interp.
+From spacelambda Require Import more_maps_and_sets more_space_lang.
+From spacelambda Require Import interp.
 
 Set Implicit Arguments.
 

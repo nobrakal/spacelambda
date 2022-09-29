@@ -4,10 +4,10 @@ From iris.proofmode Require Import base proofmode classes.
 From iris.algebra Require Import gmap auth.
 From stdpp Require Import gmap binders gmultiset.
 
-From glaneur.fracz Require Export qz smultiset.
-From glaneur.language Require Import language.
+From spacelambda.fracz Require Export qz smultiset.
+From spacelambda.language Require Import language.
 
-From glaneur Require Import more_space_lang wp interp.
+From spacelambda Require Import more_space_lang wp interp.
 
 Section Utils.
 Context `{interpGS Σ}.

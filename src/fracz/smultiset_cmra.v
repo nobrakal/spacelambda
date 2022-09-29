@@ -2,7 +2,7 @@ From iris.algebra Require Export cmra.
 From iris.algebra Require Import updates local_updates big_op.
 From iris.algebra Require Import proofmode_classes.
 
-From glaneur Require Export smultiset.
+From spacelambda Require Export smultiset.
 
 Section smultiset.
   Context `{Countable K}.

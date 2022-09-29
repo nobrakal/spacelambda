@@ -2,11 +2,11 @@ From iris.proofmode Require Import base proofmode classes.
 From iris.algebra Require Import gmap auth.
 From stdpp Require Import gmap gmultiset.
 
-From glaneur.fracz Require Import qz qz_cmra smultiset.
-From glaneur.spacelang Require Import successors predecessors.
-From glaneur.language Require Import language.
+From spacelambda.fracz Require Import qz qz_cmra smultiset.
+From spacelambda.spacelang Require Import successors predecessors.
+From spacelambda.language Require Import language.
 
-From glaneur Require Export wp ph.
+From spacelambda Require Export wp ph.
 
 Global Notation dom := (dom (gset loc)).
 
@@ -381,7 +381,7 @@ End Interp.
 
 Global Notation "♢ n" := (diamond n)%I%Qz (at level 20) : bi_scope.
 
-Global Instance glaneur_glaneurGS `{interpGS Σ} : glaneurGS Σ.
+Global Instance spacelambda_spacelambdaGS `{interpGS Σ} : spacelambdaGS Σ.
 Proof.
   apply (GlaneurGS _ interp Stackables).
   { eapply interp_shift. }

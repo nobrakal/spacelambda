@@ -1,7 +1,7 @@
 Require Import Coq.Program.Equality.
 
 From stdpp Require Import base sets relations gmap.
-From glaneur.language Require Import head_semantics semantics alt_semantics gc.
+From spacelambda.language Require Import head_semantics semantics alt_semantics gc.
 
 (* ------------------------------------------------------------------------ *)
 (* We enunciate the equivalence between [reduction] and [alt_reduction]

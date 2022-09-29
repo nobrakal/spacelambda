@@ -1,6 +1,6 @@
 From stdpp Require Import gmap gmultiset.
 From iris.proofmode Require Import proofmode.
-From glaneur.spacelang Require Import stdpp gset_fixpoint rhypotheses.
+From spacelambda.spacelang Require Import stdpp gset_fixpoint rhypotheses.
 
 (* This file contains mathematical results about the notions of successor,
    reachability, garbage collection, agreement between the physical store

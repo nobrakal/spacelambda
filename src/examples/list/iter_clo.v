@@ -3,15 +3,15 @@ From iris.proofmode Require Import proofmode.
 
 From iris.algebra Require Import gmap.
 
-From glaneur.fracz Require Import qz qz_cmra smultiset_cmra.
-From glaneur.language Require Import notation closure.
+From spacelambda.fracz Require Import qz qz_cmra smultiset_cmra.
+From spacelambda.language Require Import notation closure.
 
-From glaneur Require Import utils interp more_space_lang wp_all wps triple.
-From glaneur Require Import wp_closure wp_spec.
+From spacelambda Require Import utils interp more_space_lang wp_all wps triple.
+From spacelambda Require Import wp_closure wp_spec.
 
-From glaneur.examples.tactics Require Import tactics.
-From glaneur.examples.lib Require Import ref.
-From glaneur.examples.list Require Import list.
+From spacelambda.examples.tactics Require Import tactics.
+From spacelambda.examples.lib Require Import ref.
+From spacelambda.examples.list Require Import list.
 
 (* ------------------------------------------------------------------------ *)
 (* We specify and prove a recursive closure inside list_iter. *)

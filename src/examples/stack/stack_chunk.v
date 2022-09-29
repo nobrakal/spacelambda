@@ -3,11 +3,11 @@ From iris.proofmode Require Import proofmode.
 
 From iris.algebra Require Import gmap.
 
-From glaneur.fracz Require Import qz smultiset.
-From glaneur.language Require Import notation.
+From spacelambda.fracz Require Import qz smultiset.
+From spacelambda.language Require Import notation.
 
-From glaneur Require Import more_space_lang wp_all wpc triple.
-From glaneur.examples Require Import tactics ref list stack.
+From spacelambda Require Import more_space_lang wp_all wpc triple.
+From spacelambda.examples Require Import tactics ref list stack.
 
 (* LATER later make_record *)
 

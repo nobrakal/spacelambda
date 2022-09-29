@@ -2,11 +2,11 @@ From iris.algebra Require Import auth gmap.
 From iris.base_logic.lib Require Import gen_heap.
 From iris.proofmode Require Import proofmode.
 
-From glaneur.spacelang Require Import hypotheses successors predecessors stdpp.
-From glaneur.spacelang Require iris.
-From glaneur.fracz Require Import qz qz_cmra smultiset fracset.
-From glaneur Require Import more_maps_and_sets.
-From glaneur Require Import tied.
+From spacelambda.spacelang Require Import hypotheses successors predecessors stdpp.
+From spacelambda.spacelang Require iris.
+From spacelambda.fracz Require Import qz qz_cmra smultiset fracset.
+From spacelambda Require Import more_maps_and_sets.
+From spacelambda Require Import tied.
 
 (* This module sets-up the machinery needed for the store.
    It provides traditional points-to assertions through the Iris gen_heap:

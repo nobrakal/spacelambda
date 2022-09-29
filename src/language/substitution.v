@@ -2,7 +2,7 @@ From Coq Require Import Wellfounded.
 
 From stdpp Require Import base binders sets stringmap.
 
-From glaneur.language Require Import syntax.
+From spacelambda.language Require Import syntax.
 
 (* ------------------------------------------------------------------------ *)
 (* Substitution. *)

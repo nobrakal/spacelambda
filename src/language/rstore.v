@@ -1,8 +1,8 @@
 From stdpp Require Import sets mapset gmultiset gmap relations.
 From iris.program_logic Require Import language.
 
-From glaneur.spacelang Require Import successors.
-From glaneur Require Import rhypotheses syntax head_semantics pointers.
+From spacelambda.spacelang Require Import successors.
+From spacelambda Require Import rhypotheses syntax head_semantics pointers.
 
 Set Implicit Arguments.
 

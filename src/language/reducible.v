@@ -1,8 +1,8 @@
 From Coq Require Import Program.Equality.
 From stdpp Require Import gmap relations.
 
-From glaneur.spacelang Require Import hypotheses successors.
-From glaneur Require Import alt_semantics semantics_equivalence substitution.
+From spacelambda.spacelang Require Import hypotheses successors.
+From spacelambda Require Import alt_semantics semantics_equivalence substitution.
 
 Set Implicit Arguments.
 

@@ -1,8 +1,8 @@
 From stdpp Require Import gmap gmultiset.
 From iris.proofmode Require Import proofmode.
 
-From glaneur.spacelang Require Import stdpp hypotheses predecessors.
-From glaneur.fracz Require Import qz smultiset fracset.
+From spacelambda.spacelang Require Import stdpp hypotheses predecessors.
+From spacelambda.fracz Require Import qz smultiset fracset.
 
 (* This file defines how we tie the store σ, the map of predecessors π,
    and a map of additional fracsets μ, through an invariant [tied σ π μ].

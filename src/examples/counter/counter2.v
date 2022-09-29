@@ -3,15 +3,15 @@ From iris.proofmode Require Import proofmode.
 
 From iris.algebra Require Import gmap.
 
-From glaneur.fracz Require Import qz qz_cmra smultiset_cmra.
-From glaneur.language Require Import notation closure.
-From glaneur Require Import interp.
+From spacelambda.fracz Require Import qz qz_cmra smultiset_cmra.
+From spacelambda.language Require Import notation closure.
+From spacelambda Require Import interp.
 
-From glaneur Require Import utils more_space_lang wp_all wp_spec wps triple.
+From spacelambda Require Import utils more_space_lang wp_all wp_spec wps triple.
 
-From glaneur.examples.tactics Require Import tactics.
-From glaneur.examples.lib Require Import ref.
-From glaneur.examples.counter Require Import counter.
+From spacelambda.examples.tactics Require Import tactics.
+From spacelambda.examples.lib Require Import ref.
+From spacelambda.examples.counter Require Import counter.
 
 Definition mk_counter_both : val :=
   λ: [[]],

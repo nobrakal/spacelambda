@@ -1,9 +1,9 @@
 From stdpp Require Import gmap gmultiset.
 From iris.prelude Require Import prelude.
 
-From glaneur.spacelang Require Import stdpp hypotheses predecessors.
+From spacelambda.spacelang Require Import stdpp hypotheses predecessors.
 
-From glaneur Require Import syntax store.
+From spacelambda Require Import syntax store.
 
 (* ------------------------------------------------------------------------ *)
 (* We will work with multiset. *)

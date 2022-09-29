@@ -2,10 +2,10 @@ From iris.proofmode Require Import base proofmode classes.
 From iris.algebra Require Import auth.
 From stdpp Require Import gmap gmultiset.
 
-From glaneur.spacelang Require Import successors predecessors.
-From glaneur.language Require Import semantics_equivalence semantics language.
-From glaneur.fracz Require Import qz qz_cmra.
-From glaneur Require Import ph interp wp.
+From spacelambda.spacelang Require Import successors predecessors.
+From spacelambda.language Require Import semantics_equivalence semantics language.
+From spacelambda.fracz Require Import qz qz_cmra.
+From spacelambda Require Import ph interp wp.
 
 From stdpp Require Import relations.
 

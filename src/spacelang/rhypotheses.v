@@ -1,6 +1,6 @@
 From iris.proofmode Require Import proofmode.
-From glaneur.spacelang Require Import stdpp.
-From glaneur.spacelang Require Export hypotheses.
+From spacelambda.spacelang Require Import stdpp.
+From spacelambda.spacelang Require Export hypotheses.
 
 (* ------------------------------------------------------------------------ *)
 

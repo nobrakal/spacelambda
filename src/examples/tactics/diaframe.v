@@ -1,8 +1,8 @@
-From glaneur Require Import notation.
-From glaneur Require Import interp triple.
-From glaneur Require Import more_space_lang wp_all.
-From glaneur Require Import wp_spec wps.
-From glaneur Require Import qz smultiset.
+From spacelambda Require Import notation.
+From spacelambda Require Import interp triple.
+From spacelambda Require Import more_space_lang wp_all.
+From spacelambda Require Import wp_spec wps.
+From spacelambda Require Import qz smultiset.
 
 From diaframe Require Import pure_solver.
 From diaframe Require Export proofmode_base.

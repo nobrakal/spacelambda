@@ -1,8 +1,8 @@
 From Coq Require Import Program.Equality.
 From stdpp Require Import gmap relations.
 
-From glaneur.spacelang Require Import hypotheses successors.
-From glaneur Require Export rstore head_semantics gc store.
+From spacelambda.spacelang Require Import hypotheses successors.
+From spacelambda Require Export rstore head_semantics gc store.
 
 Set Implicit Arguments.
 

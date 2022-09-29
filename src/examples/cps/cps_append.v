@@ -3,13 +3,13 @@ From iris.proofmode Require Import proofmode.
 
 From iris.algebra Require Import gmap.
 
-From glaneur.fracz Require Import qz qz_cmra smultiset_cmra.
-From glaneur.language Require Import notation closure.
+From spacelambda.fracz Require Import qz qz_cmra smultiset_cmra.
+From spacelambda.language Require Import notation closure.
 
-From glaneur Require Import utils interp more_space_lang wp_all wps triple.
-From glaneur Require Import wp_closure wp_spec.
+From spacelambda Require Import utils interp more_space_lang wp_all wps triple.
+From spacelambda Require Import wp_closure wp_spec.
 
-From glaneur.examples Require Import tactics cps_fact list list_rev.
+From spacelambda.examples Require Import tactics cps_fact list list_rev.
 
 (* ------------------------------------------------------------------------ *)
 (* cps_append with a recursive closure, and its two specifications. *)

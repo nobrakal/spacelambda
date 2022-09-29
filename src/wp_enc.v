@@ -2,14 +2,14 @@ From iris.proofmode Require Import base proofmode classes.
 From iris.algebra Require Import gmap auth.
 From stdpp Require Import gmap gmultiset.
 
-From glaneur.fracz Require Import qz smultiset.
-From glaneur.spacelang Require Import successors predecessors.
-From glaneur.language Require Import language closure notation.
-From glaneur Require Import more_space_lang more_maps_and_sets.
-From glaneur Require Export utils interp.
+From spacelambda.fracz Require Import qz smultiset.
+From spacelambda.spacelang Require Import successors predecessors.
+From spacelambda.language Require Import language closure notation.
+From spacelambda Require Import more_space_lang more_maps_and_sets.
+From spacelambda Require Export utils interp.
 
-From glaneur Require Import wp_closure wp_spec.
-From glaneur Require Import interp wp_alloc wp_call wp_load wp_bin_op wp_store.
+From spacelambda Require Import wp_closure wp_spec.
+From spacelambda Require Import interp wp_alloc wp_call wp_load wp_bin_op wp_store.
 
 (******************************************************************************)
 

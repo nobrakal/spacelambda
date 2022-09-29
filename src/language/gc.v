@@ -2,12 +2,12 @@ Require Import Coq.Program.Equality.
 From stdpp Require Import sets mapset gmap relations gmultiset.
 From iris.program_logic Require Import language.
 
-From glaneur.spacelang Require Import stdpp hypotheses successors.
-From glaneur Require Import store rstore pointers.
+From spacelambda.spacelang Require Import stdpp hypotheses successors.
+From spacelambda Require Import store rstore pointers.
 
 Set Implicit Arguments.
 
-(* This file defines garbage collection in glaneur. *)
+(* This file defines garbage collection in spacelambda. *)
 
 (* ------------------------------------------------------------------------ *)
 

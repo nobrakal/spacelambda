@@ -1,5 +1,5 @@
 From stdpp Require Import binders gmap stringmap.
-From glaneur Require Import syntax notation.
+From spacelambda Require Import syntax notation.
 
 (* foldr + an index of the current element. *)
 Fixpoint foldri {A B} i (f:nat -> B → A → A) (e:A) (xs:list B) : A :=

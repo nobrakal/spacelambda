@@ -2,7 +2,7 @@ From iris.algebra Require Export cmra local_updates.
 From iris.algebra Require Import proofmode_classes.
 From iris.prelude Require Import options.
 
-From glaneur Require Import qz.
+From spacelambda Require Import qz.
 
 Notation gfrac := Qz (only parsing).
 

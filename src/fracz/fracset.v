@@ -4,9 +4,9 @@ From iris.algebra Require Export cmra.
 From iris.algebra Require Import updates local_updates big_op.
 From iris.prelude Require Import options.
 
-From glaneur Require Import qz qz_cmra.
-From glaneur Require Import smultiset.
-From glaneur Require Export nfrac.
+From spacelambda Require Import qz qz_cmra.
+From spacelambda Require Import smultiset.
+From spacelambda Require Export nfrac.
 
 Section Smultiset.
 

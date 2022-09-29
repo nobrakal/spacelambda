@@ -3,7 +3,7 @@ From iris.algebra Require Export cmra.
 From iris.algebra Require Import updates local_updates big_op.
 From iris.prelude Require Import options.
 
-From glaneur Require Import qz qz_cmra.
+From spacelambda Require Import qz qz_cmra.
 
 Class IsNegligible (A:ucmra) (negligible:A -> Prop) := mk_negligible
   { negligible_proper : Proper (equiv ==> iff) negligible;

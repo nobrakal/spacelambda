@@ -1,6 +1,6 @@
 From iris.algebra Require Import gmap gmultiset.
 From iris.proofmode Require Import proofmode.
-From glaneur.spacelang Require Import stdpp hypotheses.
+From spacelambda.spacelang Require Import stdpp hypotheses.
 
 (* This file contains mathematical results about the interplay between
    successors and predecessors in a heap. The physical heap σ is a map

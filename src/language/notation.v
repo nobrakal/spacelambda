@@ -1,5 +1,5 @@
 From stdpp Require Import binders base.
-From glaneur.language Require Export language.
+From spacelambda.language Require Export language.
 
 (* From https://plv.mpi-sws.org/coqdoc/iris/iris.bi.weakestpre.html *)
 Declare Scope tm_scope.

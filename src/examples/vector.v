@@ -3,11 +3,11 @@ From iris.proofmode Require Import proofmode.
 
 From iris.algebra Require Import gmap.
 
-From glaneur.language Require Import notation.
+From spacelambda.language Require Import notation.
 
-From glaneur Require Import more_space_lang wp_all triple.
+From spacelambda Require Import more_space_lang wp_all triple.
 
-From glaneur.examples Require Export tactics utils diaframe.
+From spacelambda.examples Require Export tactics utils diaframe.
 
 Definition Vector `{!interpGS Σ} (qz : Qz) (qp : Qp) (vs : list val) (l : loc) (capacity : nat) : iProp Σ :=
   ∃ (l' : loc),

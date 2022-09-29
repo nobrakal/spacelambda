@@ -3,14 +3,14 @@ From iris.proofmode Require Import proofmode.
 
 From iris.algebra Require Import gmap.
 
-From glaneur.fracz Require Import qz qz_cmra smultiset_cmra.
-From glaneur.language Require Import notation.
-From glaneur Require Import interp.
+From spacelambda.fracz Require Import qz qz_cmra smultiset_cmra.
+From spacelambda.language Require Import notation.
+From spacelambda Require Import interp.
 
-From glaneur Require Import more_space_lang wp_all wpc triple.
+From spacelambda Require Import more_space_lang wp_all wpc triple.
 
-From glaneur.examples.tactics Require Import tactics.
-From glaneur.examples.list Require Import list.
+From spacelambda.examples.tactics Require Import tactics.
+From spacelambda.examples.list Require Import list.
 
 (* ------------------------------------------------------------------------ *)
 (* rev_append with its two specifications. *)

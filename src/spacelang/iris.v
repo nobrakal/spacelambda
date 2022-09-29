@@ -128,7 +128,7 @@ End big_op.
 
 From stdpp Require fin_sets.
 From iris.base_logic.lib Require Import gen_heap.
-From glaneur Require Import stdpp.
+From spacelambda Require Import stdpp.
 
 Section GenHeap.
 Context `{Countable L, hG : !gen_heapGS L V Σ}.

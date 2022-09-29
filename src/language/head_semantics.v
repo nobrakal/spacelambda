@@ -1,6 +1,6 @@
 From stdpp Require Import sets gmap gmultiset.
-From glaneur Require Import substitution.
-From glaneur Require Export store.
+From spacelambda Require Import substitution.
+From spacelambda Require Export store.
 
 Set Implicit Arguments.
 

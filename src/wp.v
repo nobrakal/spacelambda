@@ -3,8 +3,8 @@ From iris.bi Require Import weakestpre.
 From iris.base_logic.lib Require Export fancy_updates.
 From iris.algebra Require Import frac.
 
-From glaneur.language Require Import language.
-From glaneur Require Import more_maps_and_sets.
+From spacelambda.language Require Import language.
+From spacelambda Require Import more_maps_and_sets.
 
 Set Implicit Arguments.
 
@@ -39,7 +39,7 @@ Definition nofree (r:gset loc) : gmap loc Qp :=
 Lemma dom_nofree r : dom (nofree r) = r.
 Proof. apply dom_gset_to_gmap. Qed.
 
-Class glaneurGS (Σ : gFunctors) :=
+Class spacelambdaGS (Σ : gFunctors) :=
   GlaneurGS {
       iinvgs :> invGS Σ;
       (* A store interpretation predicate.
@@ -78,7 +78,7 @@ Class glaneurGS (Σ : gFunctors) :=
     }.
 
 Section wp.
-Context `{!glaneurGS Σ}.
+Context `{!spacelambdaGS Σ}.
 
 (* ------------------------------------------------------------------------ *)
 (* The actual wp. *)
