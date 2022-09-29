@@ -50,7 +50,7 @@ opposed to `INSTALL.md` which creates a local opam directory). In theory one
 should only need to run:
 
 ```
-wget -O- https://gitlab.inria.fr/amoine/spacelambda/-/raw/master/setup-artifact.sh | bash
+wget -O- https://gitlab.inria.fr/amoine/spacelambda/-/raw/main/setup-artifact.sh | bash
 ```
 
 Which should download the project, its dependencies and compile everything.
