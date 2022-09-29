@@ -6,21 +6,15 @@ set -xeu
 # VirtualBox with 2048 MB of RAM and 15 GB disk (more than the default), and
 # took about 35 minutes.
 
-if
-  ! command -v make >/dev/null \
-  || ! command -v gcc >/dev/null \
-  || ! dpkg -l libgmp-dev
-then
-	echo "*** Installing make, gcc, libgmp-dev, please type the sudo password ***"
-	sudo apt-get -y install make gcc libgmp-dev
-else
-  echo "Dependencies ok"
-fi
+echo "*** Installing dependencies, please type the sudo password ***"
+sudo apt-get -y install make gcc libgmp-dev git emacs
+echo "Dependencies ok"
 
 if ! command -v opam >/dev/null
 then
   echo "*** Installing opam ***"
   sh <(wget -O- https://raw.githubusercontent.com/ocaml/opam/master/shell/install.sh)
+  opam init
 else
   echo "Opam available"
 fi
@@ -31,6 +25,9 @@ tar zxvf project.tar.gz --one-top-level=project --strip-components 1
 cd project/
 
 ./setup.sh
+
+echo "*** Installing coqide ***"
+opam install coqide
 
 echo "*** Compile the project ***"
 echo "If an error appears here, try to open a new terminal and run:"
