@@ -27,82 +27,116 @@ forbid it, so a side-condition locs(t) = ∅ appears from time to time.
 This is a list of the definitions & claims that are made in the
 article, and for each claim, where to find the corresponding proof.
 
-* Figure 2: `language/syntax.v`
-* Figure 3: `language/head_semantics.v`
+* Figure 2: File `language/syntax.v`
+
+| Construction        | Definition |
+|---------------------|------------|
+| Terms               | `tm`       |
+| Values              | `val`      |
+| Evaluation Contexts | `ctx`      |
+
+* Figure 3:
+  `language/head_semantics.v`, Inductive `head_step`.
+
 * Figure 4:
-  + GC relation: `language/gc.v`
-  + reduction relation: `language/semantics.v`
-* Section 4.1:
-  + Rule Conseq: Lemma `wp_conseq` in `wp.v`
-  + Rule Frame: Lemma `wp_frame` in `wp.v`
-* Section 4.2:
-  + Rule LogicalFree: Lemma `logical_free` in `interp.v`
-* Section 4.3:
-  + Rule SplitPointedBy: Lemma `mapsfrom_split` in `ph.v`
-  + Rule JoinPointedBy: Lemma `mapsfrom_join` in `ph.v`
+
+| Relation  | Definition  | File                   |
+|-----------|-------------|------------------------|
+| GC        | `gc`        | `language/gc.v`        |
+| Reduction | `reduction` | `language/semantics.v` |
+
+* Section 4:
+
+| Rule           | Lemma              | File       |
+|----------------|--------------------|------------|
+| Conseq         | `wp_conseq`        | `wp.v`     |
+| Frame          | `wp_frame`         | `wp.v`     |
+| LogicalFree    | `logical_free`     | `interp.v` |
+| SplitPointedBy | `mapsfrom_split`   | `ph.v`     |
+| JoinPointedBy  | `mapsfrom_join`    | `ph.v`     |
+| Cleanup        | `mapsfrom_cleanup` | `interp.v` |
+
 * Figure 5:
-  + Rule BinOp: Lemma `wp_bin_op` in `wp_bin_op.v`
-  + Rules IfTrue, IfFalse: Lemma `wp_if` in `wp.v`
-  + Rule Bind: Lemma `wp_bind` in `wp.v`
-  + Rule LetVal: Lemma `wp_let_val` in `wp.v`
-  + Rule CallPtr: Lemma `wp_call` in `wp_call.v`
-  + Rule Alloc: Lemma `wp_alloc` in `wp_alloc.v`
-  + Rule Load: Lemma `wp_load` in `wp_load.v`
-  + Rule Store: Lemma `wp_store` in `wp_store.v`
-* Section 4.6:
-  + Rule Cleanup: Lemma `mapsfrom_cleanup` in `interp.v`
-* Figure 6:
-  + Rule BindWithSouvenir: Lemma `wpc_bind` in `wpc.v`
-  + Rule AddSouvenir: Lemma `wpc_context_singleton` in `wpc.v`
-  + Rule ForgetSouvenir: Lemma `wpc_weak` in `wpc.v`
-* Figure 7:
-  + Rule BindNoFree: Lemma `wps_bind_nofree` in `wps.v`
-  + Rule ConseqMode: Lemma `wps_conseq` in `wps.v`
-* Section 5.2:
-  + Rule ConseqWithSouvenir: Lemma `wpc_conseq` in `wpc.v`
-  + Rule UpdateWithSouvenir: Lemma `supd_simpl` in `wp.v`
+
+| Rule            | Lemma        | File          |
+|-----------------|--------------|---------------|
+| BinOp           | `wp_bin_op`  | `wp_bin_op.v` |
+| IfTrue, IfFalse | `wp_if`      | `wp.v`        |
+| Bind            | `wp_bind`    | `wp.v`        |
+| LetVal          | `wp_let_val` | `wp.v`        |
+| CallPtr         | `wp_call`    | `wp_call.v`   |
+| Alloc           | `wp_alloc`   | `wp_alloc.v`  |
+| Load            | `wp_load`    | `wp_load.v`   |
+| Store           | `wp_store`   | `wp_store.v`  |
+
+* Figure 6 & 7, Section 5.2:
+
+| Rule               | Lemma                   | File    |
+|--------------------|-------------------------|---------|
+| BindWithSouvenir   | `wpc_bind`              | `wpc.v` |
+| AddSouvenir        | `wpc_context_singleton` | `wpc.v` |
+| ForgetSouvenir     | `wpc_weak`              | `wpc.v` |
+| BindNoFree         | `wps_bind_nofree`       | `wps.v` |
+| ConseqMode         | `wps_conseq`            | `wps.v` |
+| ConseqWithSouvenir | `wpc_conseq`            | `wpc.v` |
+| UpdateWithSouvenir | `supd_simpl`            | `wp.v`  |
+
 * Theorem 6.1:
   Lemma `wp_adequacy` in `wp_adequacy.v`
-* Figure 8:
-  + Rule MkClo: Lemma `wp_mk_clo` in `wp_closure.v`
-  + Rule CallClo: Lemma `wp_call_clo` in `wp_closure.v`
-  + Rule FreeClo: Lemma `closure_free` in `wp_closure.v`
-* Figure 9:
-  + Rule MkSpec: Lemma `wp_mk_spec` in `wp_spec.v`
-  + Rule CallClo: Lemma `wp_call_spec` in `wp_spec.v`
-  + Rule FreeClo: Lemma `spec_free` in `wp_spec.v`
-* Figure 10:
-  + First specification: Lemma `list_rev_append_preserving_spec` in
-	`examples/list/list_rev.v`
-  + Second specification: Lemma `list_rev_append_destructive_spec` in
-    `examples/list/list_rev.v`
-* Figure 11:
-  + `append` : Definition `cps_append` in `examples/cps/cps_append.v`
-  + `mkcounter` : Definition `mk_counter` in
-    `examples/counter/counter.v`
-* Figure 12:
-  + First specification: Lemma `cps_append_preserving_spec` in
-	`examples/cps/cps_append.v`
-  + Second specification: Lemma `cps_append_destructive_spec` in
-	`examples/cps/cps_append.v`
-* Figure 13:
-  + First specification: Lemma `mk_counter_spec'` in
-	`examples/counter/counter.v`
-  + Second specification: Lemma `counter_call_incr'` in
-	`examples/counter/counter.v`
-  + Third specification: Lemma `counter_get_incr'` in
-	`examples/counter/counter.v`
-  + Fourth specification: Lemma `counter_free'` in
-	`examples/counter/counter.v`
-* Figure 14: Module `PaperStack`
-  + First specification: Lemma `stack_create_spec` in
-	`examples/stack/stack.v`
-  + Second specification: Lemma `stack_push_spec` in
-    `examples/stack/stack.v`
-  + Third specification: Lemma `stack_pop_spec` in
-    `examples/stack/stack.v`
-  + Fourth specification: Lemma `stack_free` in
-    `examples/stack/stack.v`
+
+* Figure 8 & 9:
+
+| Rule     | Lemma          | File           |
+|----------|----------------|----------------|
+| MkClo    | `wp_mk_clo`    | `wp_closure.v` |
+| CallClo  | `wp_call_clo`  | `wp_closure.v` |
+| FreeClo  | `closure_free` | `wp_closure.v` |
+| MkSpec   | `wp_mk_spec`   | `wp_spec.v`    |
+| CallSpec | `wp_call_spec` | `wp_spec.v`    |
+| FreeSpec | `spec_free`    | `wp_spec.v`    |
+
+* Examples on lists: In directory `examples`
+
+| Claim                             | Formalization                      | File               |
+|-----------------------------------|------------------------------------|--------------------|
+| List Definition                   | `list_alt`                         | `list/list.v`      |
+| Preserving spec. of `rev_append`  | `list_rev_append_preserving_spec`  | `list/list_rev.v`  |
+| Destructive spec. of `rev_append` | `list_rev_append_destructive_spec` | `list/list_rev.v`  |
+| Definition of `cps_append`        | `cps_append`                       | `cps/cps_append.v` |
+| Preserving spec. of `cps_append`  | `cps_append_preserving_spec`       | `cps/cps_append.v` |
+| Destructive spec. of `cps_append` | `cps_append_destructive_spec`      | `cps/cps_append.v` |
+
+* Examples on the counter object: In directory `examples/counter/counter.v`
+
+| Claim                     | Formalization        |
+|---------------------------|----------------------|
+| Definition of `mkcounter` | `mk_counter`         |
+| Spec. of `mk_couter`      | `mk_counter_spec'`   |
+| Spec of the incr closure  | `counter_call_incr'` |
+| Spec of the get closure   | `counter_get_incr'`  |
+| Logical deallocation      | `counter_free'`      |
+
+* Examples on stacks: In directory `examples/stack/`
+
+Our base stack definition is more general than the one in the
+paper. It is presented in the module `StackOf` in file `stack.v`. We
+derive the specifications of the paper by the mean of the `PaperStack`
+functor in file `stack.v`
+
+| Claim                      | Formalization       |
+|----------------------------|---------------------|
+| Spec. of `create`          | `stack_create_spec` |
+| Spec. of `push`            | `stack_push_spec`   |
+| Spec. of `pop`             | `stack_pop_spec`    |
+| Logical deallocation       | `stack_free`        |
+
+We then show three implementations of the `StackOf` module.
+
+| Implementation | File                |
+|----------------|---------------------|
+| Lists          | `stack_list.v`      |
+| Arrays         | `stack_chunk.v`     |
+| Stack of stack | `stack_of_stacks.v` |
 
 ## Download, installation, sanity-testing
 
@@ -152,7 +186,17 @@ in which case one should open a new terminal and run `cd project; make`.
 
 ## Evaluation instructions
 
-XXX
+Reviewers can check that all files compile and that no `Admitted` or `Axiom`
+remains. It suffices to open the file `src/axioms.v` and play with it
+interactively.
+If the Coq command `Print Assumptions lemma` prints "Closed under the
+global context" indicates, then the theorem or definition has no
+dependencies. [reference](https://coq.inria.fr/refman/proof-engine/vernacular-commands.html#coq:cmd.Print-Assumptions).
+
+One should also open some select `.v` files inside CoqIDE or Proof General and
+evaluate the whole file to check that no errors occurs and to verify that the
+objects and statements mentioned in the claims are what they are supposed to
+be.
 
 ## Additional artifact description
 
