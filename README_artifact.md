@@ -38,7 +38,7 @@ any mode (Lemma `wp_nofree` in `wp.v`).
 This is a list of the definitions & claims that are made in the
 article, and where to find the corresponding definition or proof.
 
-* Figure 2 and Section 3.1: In directory `language`
+* Figure 2 and Section 3.1: In directory `language/`
 
 | Construction         | Definition | File        |
 |----------------------|------------|-------------|
@@ -48,7 +48,7 @@ article, and where to find the corresponding definition or proof.
 | Closure construction | `mk_clo`   | `closure.v` |
 | Closure call         | `call_clo` | `closure.v` |
 
-* Figure 3 & 4: In directory `language`
+* Figure 3 & 4: In directory `language/`
 
 | Relation       | Definition  | File                   |
 |----------------|-------------|------------------------|
@@ -115,7 +115,7 @@ generalization of lemmas presented in Figure 5 to this new wp.
 | CallSpec | `wp_call_spec` | `wp_spec.v`    |
 | FreeSpec | `spec_free`    | `wp_spec.v`    |
 
-* Examples on lists: In directory `examples`.
+* Examples on lists: In directory `examples/`.
 
 Our base list definition is more general than the one in the
 paper. It is presented in the `ListOf` definition in `list/list.v`.
@@ -158,11 +158,11 @@ functor in file `stack.v`
 
 We then show three implementations of the `StackOf` module.
 
-| Implementation | File                |
-|----------------|---------------------|
-| Lists          | `stack_list.v`      |
-| Arrays         | `stack_chunk.v`     |
-| Stack of stack | `stack_of_stacks.v` |
+| Implementation  | File                |
+|-----------------|---------------------|
+| Lists           | `stack_list.v`      |
+| Arrays          | `stack_chunk.v`     |
+| Stack of stacks | `stack_of_stacks.v` |
 
 ## Download, installation, sanity-testing
 
@@ -215,9 +215,8 @@ in which case one should open a new terminal and run `cd project; make`.
 Reviewers can check that all files compile and that no `Admitted` or `Axiom`
 remains. It suffices to open the file `src/axioms.v` and play with it
 interactively.
-If the Coq command `Print Assumptions lemma` prints "Closed under the
-global context" indicates, then the theorem or definition has no
-dependencies. [reference](https://coq.inria.fr/refman/proof-engine/vernacular-commands.html#coq:cmd.Print-Assumptions).
+If the Coq command `Print Assumptions xxx` prints "Closed under the
+global context" indicates, then `xxx` has no dependencies ([reference](https://coq.inria.fr/refman/proof-engine/vernacular-commands.html#coq:cmd.Print-Assumptions)).
 
 One should also open some select `.v` files inside CoqIDE or Proof General and
 evaluate the whole file to check that no errors occurs and to verify that the
