@@ -51,7 +51,7 @@ Module Type StackOf.
       CODE (stack_push [[v, s]])
       SOUV {[s]}
       PRE  (♢ cell_cost ∗ StackOf R xs s ∗ R x v ∗ vStackable v qp ∗ v ↤?{qz} ∅)
-      POST (fun tt => StackOf R ((x,(qz,qp))::xs) s).
+      POST (fun (_:unit) => StackOf R ((x,(qz,qp))::xs) s).
 
   Axiom stack_pop_spec : forall `{interpGS Σ} A (R:A -> val -> iProp Σ),
     forall s qp qz x xs,
@@ -162,7 +162,7 @@ Lemma stack_push_dominant_spec `{!interpGS Σ} A (R:A -> val -> iProp Σ) qp x v
   CODE (stack_push [[v, s]])
   SOUV {[s]}
   PRE (♢ cell_cost ∗ StackDominantOf R qp xs s ∗ v ↤? ∅ ∗ vStackable v qp ∗ R x v)
-  POST (fun tt => StackDominantOf R qp (x::xs) s).
+  POST (fun (_:unit) => StackDominantOf R qp (x::xs) s).
 Proof.
   iIntros (?) "(? & ? & ? & ? & ?)".
   wps_apply @stack_push_spec.
@@ -225,15 +225,19 @@ Definition Stack `{interpGS Σ} (L:list (val * Qp)) (l:loc) : iProp Σ :=
 Lemma stack_empty_spec `{interpGS Σ} :
     CODE (stack_empty [[]])
     PRE  (♢ empty_cost)
-    POST (fun s => Stack [] s ∗ Stackable s 1%Qp ∗ s ↤ ∅).
-Proof. apply stack_empty_spec. Qed.
+    POST (fun s => Stack [] s ∗ s ↩ ∅).
+Proof.
+  iIntros.
+  wps_apply stack_empty_spec.
+  rewrite hooked_one. iStepsS.
+Qed.
 
 Lemma stack_push_spec `{interpGS Σ} s qp x xs :
   size_lt (length xs) capacity ->
   CODE (stack_push [[x, s]])
   SOUV {[s]}
-  PRE  (♢ cell_cost ∗ Stack xs s ∗ vStackable x qp ∗ x ↤?{qp} ∅)
-  POST (fun tt => Stack ((x,qp)::xs) s).
+  PRE  (♢ cell_cost ∗ Stack xs s ∗ x ↩{qp} ∅)
+  POST (fun (_:unit) => Stack ((x,qp)::xs) s).
 Proof.
   iIntros (?) "(? & ? & ? & ?)".
   wps_apply stack_push_spec; eauto.
@@ -245,7 +249,7 @@ Lemma stack_pop_spec `{interpGS Σ} s qp x xs :
   CODE (stack_pop [[s]])
   SOUV {[s]}
   PRE  (Stack ((x,qp)::xs) s)
-  POST (fun v => vStackable x qp ∗ v ↤?{qp} ∅ ∗ Stack xs s ∗ ♢ cell_cost).
+  POST (fun v => v ↩{qp} ∅ ∗ Stack xs s ∗ ♢ cell_cost).
 Proof.
   iIntros.
   wps_apply stack_pop_spec as "(% & ? & ? & ?)".
@@ -276,13 +280,14 @@ Proof.
   eauto.
 Qed.
 
-Lemma stack_free `{interpGS Σ} (xs:list (val*Qp)) s :
-  Stackable s 1%Qp ∗ s ↤ ∅ ∗ Stack xs s =#=∗
+Lemma stack_free `{interpGS Σ} (xs:list (val*Qp)) (s:loc) :
+  s ↩ ∅ ∗ Stack xs s =[true|∅]=∗
     ♢(empty_cost + cell_cost*length xs) ∗ † s ∗
-    ([∗ list] x ∈ xs, fst x ↤?{snd x:Qp} ∅ ∗ vStackable (fst x) (snd x)).
+    ([∗ list] x ∈ xs, (fst x) ↩{snd x} ∅).
 Proof.
-  iIntros.
-  iMod (stack_free with "[$] [$]") as "(? & (? & ? & [%vs ?]))".
+  rewrite hooked_one.
+  iIntros "((?&?)&?)". iIntros.
+  iMod (stack_free with "[$] [$]") as "(? & ? & ? & [%vs ?])".
   rewrite fmap_length. iFrame. iModIntro.
   iApply soup_mixer. iFrame.
 Qed.
