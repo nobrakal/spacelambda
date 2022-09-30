@@ -94,7 +94,7 @@ Lemma set_spec_no_loc l v (w:val):
   is_loc w = false ->
   CODEFF (set [[l, w]])
   PRE  (isRef v l)
-  POST (fun tt => isRef w l).
+  POST (fun (_:unit) => isRef w l).
 Proof.
   iStepsS.
 Qed.
@@ -109,7 +109,7 @@ Qed.
 
 Lemma incr_spec (r:loc) (i:nat) :
   isRef i r -∗
-  wps (Some ∅) (incr [[r]])%T (fun _ => isRef (1+i) r).
+  wps (Some ∅) (incr [[r]])%T (fun (_:unit) => isRef (1+i) r).
 Proof.
   iIntros.
   wps_call.

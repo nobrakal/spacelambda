@@ -10,7 +10,7 @@ From spacelambda Require Import interp.
 From spacelambda Require Import utils more_space_lang wp_all wp_spec wps triple.
 
 From spacelambda.examples.tactics Require Import tactics.
-From spacelambda.examples.lib Require Import ref.
+From spacelambda.examples.lib Require Import ref utils.
 
 (* mk_counter returns a tuple of incr & get functions. *)
 Definition mk_counter : val :=
@@ -44,7 +44,7 @@ Proof.
 Qed.
 
 Definition incr_clo_spec (r l:loc) (_:list val) (t:tm) (spec:iProp Σ): iProp Σ :=
-  ∀ (n:nat), isRef n r -∗ wps (Some ∅) t (fun _ => isRef (1+n) r ∗ spec).
+  ∀ (n:nat), isRef n r -∗ wps (Some ∅) t (fun (_:unit) => isRef (1+n) r ∗ spec).
 
 Global Instance lne_incr_clo_spec r : LNE (incr_clo_spec r).
 Proof. lne. Qed.
@@ -137,7 +137,7 @@ Qed.
 
 Lemma counter_call_incr (i:nat) fi fg :
   IsCounter i fi fg -∗
-  wps (Some ∅) (call_clo fi []) (fun _ => IsCounter (1 + i) fi fg).
+  wps (Some ∅) (call_clo fi []) (fun (_:unit) => IsCounter (1 + i) fi fg).
 Proof.
   iIntros "[%r (Hr & Hfi & Hfg & ?)]".
   wps_call_spec as "Hspec".
@@ -180,3 +180,45 @@ Proof.
 Qed.
 
 End Counter.
+
+Section PaperCounter.
+Context `{!interpGS Σ}.
+
+Lemma mk_counter_spec' :
+  CODE (mk_counter [])
+  PRE (♢ 7)
+  POST (fun l:loc =>
+    (* We return a tuple *)
+    ∃ fi fg:loc, l ↦ BBlock [val_loc fi; val_loc fg] ∗ l ↩ ∅ ∗
+    (* fi & fg are abstract locations. *)
+    fi ↩ {[+l+]} ∗ fg ↩ {[+l+]} ∗
+    (* fi & fg form a counter. *)
+    IsCounter 0 fi fg).
+Proof.
+  iIntros.
+  wps_apply mk_counter_spec as "[% [% (?&?&?&?&?)]]". rewrite !hooked_one. iStepsS.
+  rewrite !one_qp_qz. iStepsS. rewrite !one_qp_qz. iStepsS.
+Qed.
+
+Lemma counter_call_get' (i:nat) fi fg :
+  CODE (call_clo fg [])
+  PRE (IsCounter i fi fg)
+  POST (fun n:nat => ⌜i=n⌝ ∗ IsCounter i fi fg).
+Proof. apply counter_call_get. Qed.
+
+Lemma counter_call_incr' (i:nat) fi fg :
+  CODE (call_clo fi [])
+  PRE (IsCounter i fi fg)
+  POST (fun (_:unit) => IsCounter (1 + i) fi fg).
+Proof. apply counter_call_incr. Qed.
+
+Lemma counter_free' i fi fg :
+  IsCounter i fi fg ∗ fi ↩ ∅ ∗ fg ↩ ∅ =[true | ∅]=∗ ♢ 5.
+Proof.
+  rewrite !hooked_one.
+  iIntros "(? & (?&?) & (?&?))". iIntros.
+  simpl. iDestruct (counter_free i fi fg with "[$] [$]") as "?".
+  by iFrame.
+Qed.
+
+End PaperCounter.
