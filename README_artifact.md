@@ -47,16 +47,21 @@ article, and for each claim, where to find the corresponding proof.
 
 * Section 4:
 
-| Rule           | Lemma              | File       |
-|----------------|--------------------|------------|
-| Conseq         | `wp_conseq`        | `wp.v`     |
-| Frame          | `wp_frame`         | `wp.v`     |
-| LogicalFree    | `logical_free`     | `interp.v` |
-| SplitPointedBy | `mapsfrom_split`   | `ph.v`     |
-| JoinPointedBy  | `mapsfrom_join`    | `ph.v`     |
-| Cleanup        | `mapsfrom_cleanup` | `interp.v` |
+| Rule           | Lemma               | File       |
+|----------------|---------------------|------------|
+| Conseq         | `wp_conseq`         | `wp.v`     |
+| Frame          | `wp_frame`          | `wp.v`     |
+| LogicalFree    | `logical_free`      | `interp.v` |
+| SplitPointedBy | `mapsfrom_split`    | `ph.v`     |
+| JoinPointedBy  | `mapsfrom_join`     | `ph.v`     |
+| Credits Split  | `diamond_split_iff` | `interp.v` |
+| Credits Zero   | `diamond_zero`      | `interp.v` |
+| Cleanup        | `mapsfrom_cleanup`  | `interp.v` |
 
 * Figure 5:
+
+These rules are expressed w.r.t to base WP, which includes the NoFree
+mode. All the presented rules are polymorphic in this mode.
 
 | Rule            | Lemma        | File          |
 |-----------------|--------------|---------------|
@@ -69,7 +74,12 @@ article, and for each claim, where to find the corresponding proof.
 | Load            | `wp_load`    | `wp_load.v`   |
 | Store           | `wp_store`   | `wp_store.v`  |
 
-* Figure 6 & 7, Section 5.2:
+* Figure 6 & 7, Section 5:
+
+Triples with souvenir are first defined in file `wpc.v`.
+We incorporate the NoFree mode in file `wps.v`. This file also features the
+generalization of lemmas presented in Figure 5 to this new wp.
+
 
 | Rule               | Lemma                   | File    |
 |--------------------|-------------------------|---------|
@@ -82,9 +92,15 @@ article, and for each claim, where to find the corresponding proof.
 | UpdateWithSouvenir | `supd_simpl`            | `wp.v`  |
 
 * Theorem 6.1:
-  Lemma `wp_adequacy` in `wp_adequacy.v`
+  Lemma `wp_adequacy` in `wp_adequacy.v`.
+  We also state the adequacy of the WP with souvenir in Lemma
+  `simple_wps_adequacy` in `wp_adequacy.v`.
 
 * Figure 8 & 9:
+
+The rule for the closure creation are stated with the NoFree mode.
+This is not a problem since one can always restrict itself in the
+NoFree mode.
 
 | Rule     | Lemma          | File           |
 |----------|----------------|----------------|
