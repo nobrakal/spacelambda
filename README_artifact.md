@@ -158,5 +158,4 @@ XXX
 
 We believe the repository is self-contained: the structure of the project, as
 well as a link to installation instructions, appear in the `README.md` file of
-the `project` directory of the repository:
-`https://gitlab.inria.fr/amoine/spacelambda`
+the repository: `https://gitlab.inria.fr/amoine/spacelambda`
