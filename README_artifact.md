@@ -24,14 +24,14 @@ forbid it, so a side-condition locs(t) = ∅ appears from time to time.
 
 ### The NoFree mode
 
-Section 5.3 introduces the NoFree mode, mode where logical
+Section 5.3 introduces the NoFree mode, a mode where logical
 deallocation is forbidden.
 While introduced late in the article, this mode appears in the very
 definition of the WP, as a boolean parameter.
 If the mode is set to `false`, then logical deallocation is forbidden.
 Most of our rules are polymorphic in the mode.
 Note that a WP expressed with a `false` mode entails the same WP with
-any mode (Lemma `wp_nofree` in `wp.v`).
+any mode (Lemma `wp_nofree` in file `wp.v`).
 
 ## List of definitions & claims
 
@@ -86,7 +86,7 @@ article, and where to find the corresponding definition or proof.
 
 Triples with souvenir are first defined in file `wpc.v`.
 We incorporate the NoFree mode in file `wps.v`. This file also features the
-generalization of lemmas presented in Figure 5 to this new wp.
+generalization of lemmas presented in Figure 5 to this new WP.
 
 
 | Rule               | Lemma                   | File    |
@@ -100,9 +100,9 @@ generalization of lemmas presented in Figure 5 to this new wp.
 | UpdateWithSouvenir | `supd_simpl`            | `wp.v`  |
 
 * Theorem 6.1:
-  Lemma `wp_adequacy` in `wp_adequacy.v`.
+  Lemma `wp_adequacy` in file `wp_adequacy.v`.
   We also state the adequacy of the WP with souvenir in Lemma
-  `simple_wps_adequacy` in `wp_adequacy.v`.
+  `simple_wps_adequacy` in file `wp_adequacy.v`.
 
 * Figure 8 & 9:
 
@@ -118,8 +118,8 @@ generalization of lemmas presented in Figure 5 to this new wp.
 * Examples on lists: In directory `examples/`.
 
 Our base list definition is more general than the one in the
-paper. It is presented in the `ListOf` definition in `list/list.v`.
-We first restrict this definition to the `List` predicate in `list/list.v`.
+paper. It is presented in the `ListOf` definition in file `list/list.v`.
+We first restrict this definition to the `List` predicate in file `list/list.v`.
 We then state and prove the examples of the paper in additional lemmas.
 
 | Claim                                | Formalization                      | File               |
@@ -132,7 +132,7 @@ We then state and prove the examples of the paper in additional lemmas.
 | Preserving spec. of `cps_append`     | `cps_append_preserving_spec`       | `cps/cps_append.v` |
 | Destructive spec. of `cps_append`    | `cps_append_destructive_spec`      | `cps/cps_append.v` |
 
-* Examples on the counter object: In directory `examples/counter/counter.v`
+* Examples on the counter object: In file `examples/counter/counter.v`
 
 | Claim                     | Formalization        |
 |---------------------------|----------------------|
@@ -172,7 +172,7 @@ The file `artifact.ova` provided with this documentation can be
 imported into VirtualBox 6.1 through File > Import Appliance.
 The VM's login and password are both "user", although no login should be required.
 
-Inside the VM, one can open file e.g. `wp_adequacy.v` by opening a terminal
+Inside the VM, one can open a file e.g. `wp_adequacy.v` by opening a terminal
 (Ctrl-Alt-T) and typing `opam exec -- coqide project/src/wp_adequacy.v`.
 Replace `coqide` with `emacs` to run Proof General instead.
 
