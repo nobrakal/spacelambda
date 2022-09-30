@@ -78,7 +78,31 @@ article, and for each claim, where to find the corresponding proof.
     `examples/list/list_rev.v`
 * Figure 11:
   + `append` : Definition `cps_append` in `examples/cps/cps_append.v`
-  + `mkcounter` : Definition `mk_counter` in `examples/counter/counter.v`
+  + `mkcounter` : Definition `mk_counter` in
+    `examples/counter/counter.v`
+* Figure 12:
+  + First specification: Lemma `cps_append_preserving_spec` in
+	`examples/cps/cps_append.v`
+  + Second specification: Lemma `cps_append_destructive_spec` in
+	`examples/cps/cps_append.v`
+* Figure 13:
+  + First specification: Lemma `mk_counter_spec'` in
+	`examples/counter/counter.v`
+  + Second specification: Lemma `counter_call_incr'` in
+	`examples/counter/counter.v`
+  + Third specification: Lemma `counter_get_incr'` in
+	`examples/counter/counter.v`
+  + Fourth specification: Lemma `counter_free'` in
+	`examples/counter/counter.v`
+* Figure 14: Module `PaperStack`
+  + First specification: Lemma `stack_create_spec` in
+	`examples/stack/stack.v`
+  + Second specification: Lemma `stack_push_spec` in
+    `examples/stack/stack.v`
+  + Third specification: Lemma `stack_pop_spec` in
+    `examples/stack/stack.v`
+  + Fourth specification: Lemma `stack_free` in
+    `examples/stack/stack.v`
 
 ## Download, installation, sanity-testing
 
