@@ -271,7 +271,7 @@ Lemma stack_push_spec `{!interpGS Σ} A (R:A -> val -> iProp Σ) s qp qz v x xs 
   CODE (stack_push [[v, s]])
   SOUV {[s]}
   PRE  (♢ cell_cost ∗ StackOf R xs s ∗ R x v ∗ vStackable v qp ∗ v ↤?{qz} ∅)
-  POST (fun tt => StackOf R ((x,(qz,qp))::xs) s).
+  POST (fun (_:unit) => StackOf R ((x,(qz,qp))::xs) s).
 Proof.
   unfold size_lt, capacity.
   iIntros (? ?) "(_ & Hs & ? & ? & ?)".
@@ -295,7 +295,6 @@ Proof.
   rewrite left_id. rew_enc.
 
   do 6 iStepS. iFrame.
-  iExists _,_. iFrame.
   iSplitL; try easy.
   iExists _,(v::vs). iFrame.
   iPureIntro.

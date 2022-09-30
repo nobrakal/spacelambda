@@ -196,7 +196,7 @@ Lemma mk_counter_spec' :
     IsCounter 0 fi fg).
 Proof.
   iIntros.
-  wps_apply mk_counter_spec as "[% [% (?&?&?&?&?)]]". rewrite !hooked_one. iStepsS.
+  wps_apply mk_counter_spec as "[% [% (?&?&?&?&?)]]". rewrite !handle_one. iStepsS.
   rewrite !one_qp_qz. iStepsS. rewrite !one_qp_qz. iStepsS.
 Qed.
 
@@ -215,7 +215,7 @@ Proof. apply counter_call_incr. Qed.
 Lemma counter_free' i fi fg :
   IsCounter i fi fg ∗ fi ↩ ∅ ∗ fg ↩ ∅ =[true | ∅]=∗ ♢ 5.
 Proof.
-  rewrite !hooked_one.
+  rewrite !handle_one.
   iIntros "(? & (?&?) & (?&?))". iIntros.
   simpl. iDestruct (counter_free i fi fg with "[$] [$]") as "?".
   by iFrame.

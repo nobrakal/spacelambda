@@ -85,7 +85,7 @@ Lemma set_spec l v w qw r :
   qw ≠ 0%Qz ->
   CODEFF (set [[l, w]])
   PRE  (isRef v l ∗ w↤?{qw} r)
-  POST (fun tt => isRef w l ∗ w ↤?{qw} (r ⊎ {[+ l +]}) ∗ v ↤?{0%Qz} {[-l-]}).
+  POST (fun (_:unit) => isRef w l ∗ w ↤?{qw} (r ⊎ {[+ l +]}) ∗ v ↤?{0%Qz} {[-l-]}).
 Proof.
   iStepsS.
 Qed.

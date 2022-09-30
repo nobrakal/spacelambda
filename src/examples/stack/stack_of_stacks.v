@@ -326,7 +326,7 @@ Lemma stack_push_spec `{!interpGS Σ} A (R:A -> val -> iProp Σ) s qp qz v x xs 
   CODE (stack_push [[v, s]])
   SOUV {[s]}
   PRE  (♢ cell_cost ∗ StackOf R xs s ∗ R x v ∗ vStackable v qp ∗ v ↤?{qz} ∅)
-  POST (fun tt => StackOf R ((x,(qz,qp))::xs) s).
+  POST (fun (_:unit) => StackOf R ((x,(qz,qp))::xs) s).
 Proof.
   iIntros (Hiu ?) "(? & Hs & ? & ? & ?)".
   pose proof C.locs_stack_is_full.

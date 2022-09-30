@@ -214,10 +214,10 @@ Lemma list_rev_append_destructive_spec Lxs xs Lys ys :
        List Lys ys ∗ ys ↩ ∅)
   POST (fun (zs:loc) => List (rev Lxs ++ Lys) zs ∗ zs ↩ ∅ ∗ ♢1 ).
 Proof.
-  rewrite !hooked_one. simpl.
+  rewrite !handle_one. simpl.
   iIntros "(?&(?&?)&?&(?&?))".
   wps_apply list_rev_append_spec_.
-  rewrite !hooked_one. iStepsS.
+  rewrite !handle_one. iStepsS.
 Qed.
 
 Lemma list_rev_append_preserving_spec Lxs xs Lys ys :
@@ -227,9 +227,9 @@ Lemma list_rev_append_preserving_spec Lxs xs Lys ys :
        List Lys ys ∗ ys ↩ ∅)
   POST (fun (zs:loc) => List (rev (halves Lxs) ++ Lys) zs ∗ zs ↩ ∅ ∗ List (halves Lxs) xs).
 Proof.
-  rewrite !hooked_one. simpl.
+  rewrite !handle_one. simpl.
   iIntros "(?&?&?&(?&?))".
   wps_apply list_rev_append_spec'.
-  rewrite !hooked_one. iStepsS.
+  rewrite !handle_one. iStepsS.
 Qed.
 End PaperRevAppend.

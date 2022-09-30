@@ -115,16 +115,22 @@ generalization of lemmas presented in Figure 5 to this new wp.
 | CallSpec | `wp_call_spec` | `wp_spec.v`    |
 | FreeSpec | `spec_free`    | `wp_spec.v`    |
 
-* Examples on lists: In directory `examples`
+* Examples on lists: In directory `examples`.
 
-| Claim                             | Formalization                      | File               |
-|-----------------------------------|------------------------------------|--------------------|
-| List Definition                   | `list_alt`                         | `list/list.v`      |
-| Preserving spec. of `rev_append`  | `list_rev_append_preserving_spec`  | `list/list_rev.v`  |
-| Destructive spec. of `rev_append` | `list_rev_append_destructive_spec` | `list/list_rev.v`  |
-| Definition of `cps_append`        | `cps_append`                       | `cps/cps_append.v` |
-| Preserving spec. of `cps_append`  | `cps_append_preserving_spec`       | `cps/cps_append.v` |
-| Destructive spec. of `cps_append` | `cps_append_destructive_spec`      | `cps/cps_append.v` |
+Our base list definition is more general than the one in the
+paper. It is presented in the `ListOf` definition in `list/list.v`.
+We first restrict this definition to the `List` predicate in `list/list.v`.
+We then state and prove the examples of the paper in additional lemmas.
+
+| Claim                                | Formalization                      | File               |
+|--------------------------------------|------------------------------------|--------------------|
+| List Definition                      | `List_alt`                         | `list/list.v`      |
+| Equivalence of `List_alt` and `List` | `List_is_List_alt`                 | `list/list.v`      |
+| Preserving spec. of `rev_append`     | `list_rev_append_preserving_spec`  | `list/list_rev.v`  |
+| Destructive spec. of `rev_append`    | `list_rev_append_destructive_spec` | `list/list_rev.v`  |
+| Definition of `cps_append`           | `cps_append`                       | `cps/cps_append.v` |
+| Preserving spec. of `cps_append`     | `cps_append_preserving_spec`       | `cps/cps_append.v` |
+| Destructive spec. of `cps_append`    | `cps_append_destructive_spec`      | `cps/cps_append.v` |
 
 * Examples on the counter object: In directory `examples/counter/counter.v`
 

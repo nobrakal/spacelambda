@@ -383,7 +383,7 @@ Global Notation "♢ n" := (diamond n)%I%Qz (at level 20) : bi_scope.
 
 Global Instance spacelambda_spacelambdaGS `{interpGS Σ} : spacelambdaGS Σ.
 Proof.
-  apply (GlaneurGS _ interp Stackables).
+  apply (SpaceLambdaGS _ interp Stackables).
   { eapply interp_shift. }
   { eapply interp_nofree. }
   { eapply interp_shift_nofree. }

@@ -77,6 +77,6 @@ Notation "v ↩ ls" := (handle v (1%Qp) ls)
 Lemma one_qp_qz : (1%Qp : Qz) = 1%Qz.
 Proof. compute_done. Qed.
 
-Lemma hooked_one `{interpGS Σ} l vs :
+Lemma handle_one `{interpGS Σ} l vs :
   handle l 1%Qp vs = (l ↤?{1} vs ∗ vStackable l 1%Qp : iProp Σ)%I.
 Proof. rewrite /handle one_qp_qz //. Qed.

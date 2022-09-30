@@ -229,7 +229,7 @@ Lemma stack_empty_spec `{interpGS Σ} :
 Proof.
   iIntros.
   wps_apply stack_empty_spec.
-  rewrite hooked_one. iStepsS.
+  rewrite handle_one. iStepsS.
 Qed.
 
 Lemma stack_push_spec `{interpGS Σ} s qp x xs :
@@ -285,7 +285,7 @@ Lemma stack_free `{interpGS Σ} (xs:list (val*Qp)) (s:loc) :
     ♢(empty_cost + cell_cost*length xs) ∗ † s ∗
     ([∗ list] x ∈ xs, (fst x) ↩{snd x} ∅).
 Proof.
-  rewrite hooked_one.
+  rewrite handle_one.
   iIntros "((?&?)&?)". iIntros.
   iMod (stack_free with "[$] [$]") as "(? & ? & ? & [%vs ?])".
   rewrite fmap_length. iFrame. iModIntro.

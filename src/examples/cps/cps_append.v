@@ -524,8 +524,8 @@ Lemma cps_append_destructive_spec L1 l1 L2 l2 :
   PRE ( ♢ (3*(length L1) + 3) ∗ List L1 l1 ∗ l1 ↩ ∅ ∗ List L2 l2 ∗ l2 ↩ ∅)
   POST (fun l => List (L1++L2) l ∗ l ↩ ∅ ∗ ♢ (3*(length L1) + 4)).
 Proof.
-  rewrite hooked_one. simpl. iIntros "(?&?&(?&?)&?&?)".
-  wps_apply @cps_append_spec_destructive. rewrite hooked_one.
+  rewrite handle_one. simpl. iIntros "(?&?&(?&?)&?&?)".
+  wps_apply @cps_append_spec_destructive. rewrite handle_one.
   iStepsS. rewrite one_qp_qz. iStepsS.
 Qed.
 
@@ -535,7 +535,7 @@ Lemma cps_append_preserving_spec L1 l1 L2 l2 :
   PRE ( ♢ (3*(length L1) + 3*(length L1) + 3)%nat ∗ List L1 l1 ∗ List L2 l2 ∗ l2 ↩ ∅)
   POST (fun l => List (halves L1++L2) l ∗ l ↩ ∅ ∗ ♢ (3*(length L1) + 3)).
 Proof.
-  rewrite hooked_one. simpl. iIntros "(?&?&?&?&?)".
-  wps_apply @cps_append_spec_preserving. rewrite hooked_one. iStepsS.
+  rewrite handle_one. simpl. iIntros "(?&?&?&?&?)".
+  wps_apply @cps_append_spec_preserving. rewrite handle_one. iStepsS.
 Qed.
 End PaperAppend.

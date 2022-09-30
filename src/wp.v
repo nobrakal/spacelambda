@@ -40,7 +40,7 @@ Lemma dom_nofree r : dom (nofree r) = r.
 Proof. apply dom_gset_to_gmap. Qed.
 
 Class spacelambdaGS (Σ : gFunctors) :=
-  GlaneurGS {
+  SpaceLambdaGS {
       iinvgs :> invGS Σ;
       (* A store interpretation predicate.
          [interp ctx σ roots] *)

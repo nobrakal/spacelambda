@@ -278,7 +278,7 @@ Proof.
   { rewrite /List /Lists.List ListsOf.ListOf_eq.
     iSplit.
     { iIntros "[% [% (? & % & ? & ? & ? & ? & ?)]]". subst. iExists _.
-      rewrite hooked_one. iFrame.
+      rewrite handle_one. iFrame.
       iApply "IH". iFrame. }
     { iIntros "[% (? & (? & ?) & (? & ?) & ?)]". simpl. iExists _,_.
       iFrame. rewrite one_qp_qz. iFrame.
@@ -289,7 +289,7 @@ Lemma list_nil_spec :
   CODE (list_nil [[]])
   PRE  (♢ 1)
   POST (fun (l:loc) => List [] l ∗ l ↩ ∅).
-Proof. iIntros. wps_apply list_nil_spec. rewrite hooked_one. iStepsS. Qed.
+Proof. iIntros. wps_apply list_nil_spec. rewrite handle_one. iStepsS. Qed.
 
 Lemma list_cons_spec l qp v xs :
   CODE (list_cons [[v,l]])
@@ -322,7 +322,7 @@ Lemma list_head_spec l qp x xs :
 Proof.
   iIntros.
   wps_apply list_head_spec as "(? & ? & ? & [% (? & ? & ? & ?)])".
-  rewrite /Beheaded. iFrame. iExists _. rewrite hooked_one. iStepsS.
+  rewrite /Beheaded. iFrame. iExists _. rewrite handle_one. iStepsS.
 Qed.
 
 Lemma list_tail_spec v l xs :
