@@ -22,28 +22,39 @@ Closure creation uses the syntax `mk_clo` and closure call the syntax
 Code pointers must contain no locations. The syntax does not actually
 forbid it, so a side-condition locs(t) = ∅ appears from time to time.
 
+### The NoFree mode
+
+Section 5.3 introduces the NoFree mode, mode where logical
+deallocation is forbidden.
+While introduced late in the article, this mode appears in the very
+definition of the WP, as a boolean parameter.
+If the mode is set to `false`, then logical deallocation is forbidden.
+Most of our rules are polymorphic in the mode.
+Note that a WP expressed with a `false` mode entails the same WP with
+any mode (Lemma `wp_nofree` in `wp.v`).
+
 ## List of definitions & claims
 
 This is a list of the definitions & claims that are made in the
-article, and for each claim, where to find the corresponding proof.
+article, and where to find the corresponding definition or proof.
 
-* Figure 2: File `language/syntax.v`
+* Figure 2 and Section 3.1: In directory `language`
 
-| Construction        | Definition |
-|---------------------|------------|
-| Terms               | `tm`       |
-| Values              | `val`      |
-| Evaluation Contexts | `ctx`      |
+| Construction         | Definition | File        |
+|----------------------|------------|-------------|
+| Terms                | `tm`       | `syntax.v`  |
+| Values               | `val`      | `syntax.v`  |
+| Evaluation Contexts  | `ctx`      | `syntax.v`  |
+| Closure construction | `mk_clo`   | `closure.v` |
+| Closure call         | `call_clo` | `closure.v` |
 
-* Figure 3:
-  `language/head_semantics.v`, Inductive `head_step`.
+* Figure 3 & 4: In directory `language`
 
-* Figure 4:
-
-| Relation  | Definition  | File                   |
-|-----------|-------------|------------------------|
-| GC        | `gc`        | `language/gc.v`        |
-| Reduction | `reduction` | `language/semantics.v` |
+| Relation       | Definition  | File                   |
+|----------------|-------------|------------------------|
+| Head Reduction | `head_step` | `head_semantics.v`     |
+| GC             | `gc`        | `language/gc.v`        |
+| Reduction      | `reduction` | `language/semantics.v` |
 
 * Section 4:
 
@@ -59,9 +70,6 @@ article, and for each claim, where to find the corresponding proof.
 | Cleanup        | `mapsfrom_cleanup`  | `interp.v` |
 
 * Figure 5:
-
-These rules are expressed w.r.t to base WP, which includes the NoFree
-mode. All the presented rules are polymorphic in this mode.
 
 | Rule            | Lemma        | File          |
 |-----------------|--------------|---------------|
@@ -97,10 +105,6 @@ generalization of lemmas presented in Figure 5 to this new wp.
   `simple_wps_adequacy` in `wp_adequacy.v`.
 
 * Figure 8 & 9:
-
-The rule for the closure creation are stated with the NoFree mode.
-This is not a problem since one can always restrict itself in the
-NoFree mode.
 
 | Rule     | Lemma          | File           |
 |----------|----------------|----------------|
