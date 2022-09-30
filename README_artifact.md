@@ -82,7 +82,7 @@ article, and where to find the corresponding definition or proof.
 | Load            | `wp_load`    | `wp_load.v`   |
 | Store           | `wp_store`   | `wp_store.v`  |
 
-* Figure 6 & 7, Section 5:
+* Figure 6 & 7 and Section 5:
 
 Triples with souvenir are first defined in file `wpc.v`.
 We incorporate the NoFree mode in file `wps.v`. This file also features the
