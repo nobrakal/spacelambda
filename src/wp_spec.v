@@ -15,7 +15,7 @@ From spacelambda Require Import utils interp wp_alloc wp_store wp_load wp_call w
 (* Last NonExpansive *)
 Global Notation LNE f := (∀ a b c n, Proper (dist n ==> dist n) (f a b c)).
 
-Section ClosureMore.
+Section Spec.
 Context `{interpGS Σ}.
 
 (* LATER make fractional *)
@@ -155,6 +155,75 @@ Proof.
   by iFrame.
 Qed.
 
-End ClosureMore.
+End Spec.
+
+Section SpecPrime.
+Context `{interpGS Σ}.
+
+(* Spec' is a predicate for non-recursive, non-self-destructing closures.
+   It is directly derived from Spec. *)
+
+(* [transform_spec] transforms a specification predicate for Spec' into a
+   specification predicate for Spec.
+   It ignores the location of the closure, and preserves the Spec assertion. *)
+
+Local Definition transform_spec (P:list val -> tm -> iProp Σ) : loc -> list val -> tm -> iProp Σ -> iProp Σ :=
+  fun _ vs u spec => (P vs u ∗ spec)%I.
+
+(* [transform_spec P] is LNE for any P. *)
+Local Instance transform_spec_lne P : LNE (transform_spec P).
+Proof. unfold transform_spec. intros ? ? ? ? ? ? ?. repeat (f_contractive || f_equiv). eauto. Qed.
+
+Definition Spec' arity env P l : iProp Σ := Spec arity env (transform_spec P) l.
+
+Definition binder_in_stringset b (s:stringset) :=
+  match b with
+  | BAnon => False
+  | BNamed x => x ∈ s end.
+
+Lemma wp_mk_spec' P env lq self args code:
+  correct_name self args ->
+  ¬ (binder_in_stringset self (free_variables code)) ->
+  Forall (λ q : Qz, q ≠ 0%Qz) lq ->
+  locs code = ∅ ->
+  env.*1 = fv_clo' self args code ->
+  □(∀ vs, ⌜length vs = length args⌝ -∗ P vs (substs env (substs' (zip args vs) code))) -∗
+  (* Soup is a group on two arguments *)
+  ♢ (1 + length env) ∗ group_pointedbys ∅ env.*2 lq -∗
+  wp false (substs env (mk_clo self args code))
+  (fun v => ∃ l, ⌜v = val_loc l⌝ ∗ l ↤ ∅ ∗ Stackable l 1%Qp ∗ Spec' (length args) (zip env.*2 lq) P l).
+Proof.
+  iIntros (? ? ? ? ?) "#Hwp ?".
+  iApply wp_mk_spec; eauto.
+  iModIntro. iIntros.
+  iSpecialize ("Hwp" with "[%//]").
+  replace (subst' self l code) with code.
+  2:{ destruct self; try easy. simpl. rewrite subst_not_in //. }
+  iFrame "#". iFrame.
+Qed.
+
+Lemma wp_call_spec_later' P b n env l vals Ψ :
+  length vals = n ->
+  Spec' n env P l -∗
+  ▷ (∀ t, P vals t -∗ wp b t Ψ) -∗
+  wp b (call_clo l (tm_val <$> vals)) (fun v => Ψ v ∗ Spec' n env P l).
+Proof.
+  iIntros (?) "? HP".
+  iApply (wp_call_spec_later with "[$]"); eauto.
+  iModIntro.
+  iIntros (?) "(?&?)".
+  iSpecialize ("HP" with "[$]").
+  iApply (wp_mono with "[$]").
+  iIntros. by iFrame.
+Qed.
+
+Lemma spec_free' P n env l R :
+  l ∉ R ->
+  Stackable l 1%Qp ∗ l ↤ ∅ ∗
+    Spec' n env P l =[ true | R ]=∗ ♢ (1 + length env) ∗ group_pointedbys ∅ env.*1 env.*2.
+Proof. apply spec_free. Qed.
+
+End SpecPrime.
 
 Global Opaque Spec.
+Global Opaque Spec'.
