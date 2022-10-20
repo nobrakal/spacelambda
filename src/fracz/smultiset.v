@@ -371,10 +371,13 @@ Section smultiset_unfold.
   Proof. done. Qed.
   Global Instance smultiset_unfold_empty x : SmultisetUnfold x ∅ 0.
   Proof. constructor. by rewrite multiplicity_empty. Qed.
-  Global Instance smultiset_unfold_singleton x y :
+  Global Instance smultiset_unfold_singletons x z :
+    SmultisetUnfold x {[ x := z ]} z.
+  Proof. constructor. by rewrite multiplicity_singletons. Qed.
+  Global Instance smultiset_unfold_singleton x :
     SmultisetUnfold x {[+ x +]} 1.
-  Proof. constructor.  by rewrite multiplicity_psingleton. Qed.
-  Global Instance smultiset_unfold_nsingleton x y :
+  Proof. constructor. by rewrite multiplicity_psingleton. Qed.
+  Global Instance smultiset_unfold_nsingleton x :
     SmultisetUnfold x {[- x -]} (-1).
   Proof. constructor. by rewrite multiplicity_nsingleton. Qed.
   Global Instance smultiset_unfold_disj_union x X Y n m :
@@ -462,6 +465,7 @@ Proof.
   case_decide; eauto with lia.
 Qed.
 
+
 Ltac smultiset_simplify_singletons :=
   repeat match goal with
   | H : context [multiplicity ?x {[+ ?y +]}] |- _ =>
@@ -484,6 +488,14 @@ Ltac smultiset_simplify_singletons :=
        [progress rewrite ?multiplicity_nsingleton, ?multiplicity_nsingleton_ne by done
        |destruct (multiplicity_nsingleton_forget x y) as (?&->&?); clear y
        |rewrite multiplicity_nsingleton_case; destruct (decide (x = y)); simplify_eq/=]
+  | |- context [multiplicity ?x {[ ?y := ?z ]}] =>
+     first
+       [progress rewrite ?multiplicity_singletons, ?multiplicity_singletons_ne by done
+       |rewrite multiplicity_singletons_case; destruct (decide (x = y)); simplify_eq/=]
+  | |- context [multiplicity ?x {[ ?y := ?z ]}] =>
+     first
+       [progress rewrite ?multiplicity_singletons, ?multiplicity_singletons_ne by done
+       |rewrite multiplicity_singletons_case; destruct (decide (x = y)); simplify_eq/=]
   end.
 
 (** Putting it all together *)
@@ -494,6 +506,10 @@ Section more_lemmas.
   Context `{Countable A}.
   Implicit Types x y : A.
   Implicit Types X Y : smultiset A.
+
+  Lemma singleton_empty x :
+    {[ x := 0 ]} ≡ (∅ : smultiset A).
+  Proof. smultiset_solver. Qed.
 
   (** For disjoint union (aka sum) *)
   Global Instance smultiset_disj_union_comm : Comm (≡@{smultiset A}) (⊎).
