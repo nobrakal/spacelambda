@@ -46,7 +46,7 @@ Proof.
       as "[%v [%vs' (%E & (? & ?& ?) & ?)]]". subst.
     iIntros.
     iMod (vmapsfrom_cleanup with "[$] [$]") as "(? & ? & ?)".
-    rewrite disj_union_sinlgeton_opposite.
+    rew_smset.
     fold (soup R {[+c+]} xs vs').
     iMod ("IH" $! vs'  with "[$] [$] [$]") as "(? & ? & ?)".
     now iFrame. }

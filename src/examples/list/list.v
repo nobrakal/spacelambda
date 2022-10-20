@@ -92,7 +92,6 @@ Proof.
   iStepsS.
   wps_nofree.
   iStepsS.
-
   assert (opposite r ⊎ (r ⊎ {[+ x0 +]}) ≡ {[+ x0 +]}) as -> by smultiset_solver.
   rewrite left_id.
   rew_set.
@@ -165,7 +164,8 @@ Proof.
     { set_solver. }
     iMod (vmapsfrom_cleanup with "[$] [$]") as "(? & ? & ?)".
     iMod (mapsfrom_cleanup with "[$] [$]") as "(? & ?)".
-    rewrite disj_union_sinlgeton_opposite.
+
+    rew_smset.
 
     iMod (IHvs with "[$] [$]") as "(? & ? & ? & [%vs' ?])"; try easy.
     iFrame.

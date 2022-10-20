@@ -224,7 +224,7 @@ Proof.
   wps_val. iIntros. iFrame.
 
   iDestruct (vmapsfrom_join with "[$]") as "?".
-  rewrite left_id. assert ({[-c-]} ⊎ {[+ c +]} ≡ ∅) as -> by smultiset_solver.
+  rewrite left_id. rew_smset.
   unfold cell_cost. rew_qz.
   iFrame.
 
@@ -311,7 +311,7 @@ Proof.
 
   iMod (@logical_free _ _ _ _ s with "[$] [$]") as "(? & ? &#Hs)"; try easy.
   iMod (mapsfrom_cleanup with "[$] [$]") as "(? & ?)".
-  rewrite disj_union_sinlgeton_opposite.
+  rew_smset.
 
   destruct_chunk "Hc".
   iMod (logical_free with "[$] [$]") as "(? & ? & ?)"; try easy.
