@@ -39,6 +39,11 @@ Definition option_get_some : val :=
   λ: [["opt"]],
     "opt".[1].
 
+Definition option_set_none : val :=
+  λ: [["opt"]],
+    "opt".[0] <- 0;;
+    "opt".[1] <- val_unit.
+
 Section Option.
 Context `{!interpGS Σ}.
 
@@ -80,6 +85,22 @@ Proof.
   iIntros "Ho". destruct_option "Ho".
   iStepsS.
   destruct o; eauto; destruct Hcon; eauto.
+Qed.
+
+Lemma option_set_none_spec qn o l :
+  CODE (option_set_none [[l]])
+  PRE (isOption qn o l)
+  POST (fun (_:unit) => (match o with Some v => v ↤?{qn} ∅ | None => True end) ∗ isOption qn None l).
+Proof.
+  iIntros "Ho". destruct_option "Ho".
+  wps_nofree.
+  iStepsS.
+  iDestruct (vmapsfrom_join with "[$]") as "?".
+  assert ({[-l-]} ⊎ {[+ l +]} ≡ (∅:smultiset loc)) as -> by smultiset_solver.
+  rewrite left_id.
+  destruct o.
+  { destruct Hcon; subst. iStepsS. }
+  iStepsS.
 Qed.
 
 End Option.
