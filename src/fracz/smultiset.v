@@ -613,8 +613,11 @@ Section more_lemmas.
     opposite {[+l+]} ≡@{smultiset A} {[-l-]}.
   Proof. smultiset_solver. Qed.
 
-  Lemma disj_union_sinlgeton_opposite l :
+  Lemma disj_union_sinlgeton_opposite1 l :
     {[+l+]} ⊎ {[-l-]} ≡ (∅ : smultiset A).
+  Proof. smultiset_solver. Qed.
+  Lemma disj_union_sinlgeton_opposite2 l :
+    {[-l-]} ⊎ {[+l+]} ≡ (∅ : smultiset A).
   Proof. smultiset_solver. Qed.
 
   Lemma smultiset_decompose X :

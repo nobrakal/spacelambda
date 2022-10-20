@@ -167,7 +167,7 @@ Proof.
     { intros. exfalso. apply Hnw; eauto. }
     { intros. apply AllNeg_nsingleton. }
     assert (lsw ≡ lsw ⊎ {[+ l +]} ⊎ {[-l-]}) as <-.
-    { rewrite -assoc disj_union_sinlgeton_opposite right_id //. }
+    { rewrite -assoc disj_union_sinlgeton_opposite1 right_id //. }
     iFrame. }
 
   (* Case: [v] and [w] are not aliases, that is, not the same pointer. *)

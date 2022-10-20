@@ -46,6 +46,7 @@ Ltac force_rew_post :=
 
 (******************************************************************************)
 (* Rewriting maps *)
+
 Ltac rew_dom_step tt :=
   first [ rewrite dom_singleton_L
         | rewrite dom_op
@@ -55,6 +56,17 @@ Ltac rew_dom_core tt :=
   repeat (rew_dom_step tt).
 
 Tactic Notation "rew_dom" := rew_dom_core tt.
+
+(******************************************************************************)
+(* Rewriting smultiset *)
+
+Ltac rew_smset_step tt :=
+  rewrite ?disj_union_sinlgeton_opposite1 ?disj_union_sinlgeton_opposite2.
+
+Ltac rew_smset_core tt :=
+  repeat (rew_smset_step tt).
+
+Tactic Notation "rew_smset" := rew_smset_core tt.
 
 (******************************************************************************)
 (* Extending the context. *)

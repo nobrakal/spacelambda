@@ -172,7 +172,7 @@ Proof.
   wps_apply set_spec as  "(? & ? & ?)". easy.
 
   iDestruct (mapsfrom_join l with "[$] [$]") as "?".
-  assert ( ({[-s-]} ⊎ {[+ s +]}) ≡ ∅) as -> by smultiset_solver.
+  rew_smset.
   rewrite left_id_L.
 
   (* We want now to free l, and thus have prove that l ∉ locs v *)
@@ -187,7 +187,7 @@ Proof.
   iIntros "[? ?]".
 
   (* Some rewriting *)
-  assert (({[+ l +]} ⊎ {[-l-]}) ≡ ∅) as -> by smultiset_solver.
+  rew_smset.
   assert (({[+ l; s +]} ⊎ {[-l-]}) ≡ {[+s+]}) as -> by smultiset_solver.
 
   (* Conclude. *)
@@ -204,7 +204,7 @@ Proof.
 
   iMod (free_ref s l with "[$] [$]") as "(Hi & ? & #Hds)".
   iMod (mapsfrom_cleanup with "[$] [Hi]") as "(? & ?)"; first iFrame.
-  rewrite disj_union_sinlgeton_opposite.
+  rew_smset.
 
   iMod (list_free _ R l with "[$] [$]") as "(? & ? & ? & ?)".
   iDestruct (diamonds_join with "[$]") as "?".
