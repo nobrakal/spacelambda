@@ -7,11 +7,27 @@ Set Implicit Arguments.
 (* ------------------------------------------------------------------------ *)
 (* The actual semantics *)
 
-Definition exec_bin_op op :=
+Definition exec_nat_bin_op op :=
   match op with
   | OpAdd => Nat.add
   | OpMul => Nat.mul
   | OpSub => Nat.sub end.
+
+Inductive prim_step : prim -> list val -> val -> Prop :=
+| PrimNatOp : forall p op vs n1 n2,
+    p = prim_nat_op op ->
+    vs = [val_nat n1; val_nat n2] ->
+    prim_step p vs (val_nat (exec_nat_bin_op op n1 n2))
+| PrimEqNat : forall p vs n1 n2,
+    p = prim_eq ->
+    vs = [val_nat n1; val_nat n2] ->
+    prim_step p vs (val_bool (bool_decide (n1=n2)))
+| PrimEqLoc : forall p vs l1 l2,
+    p = prim_eq ->
+    vs = [val_loc l1; val_loc l2] ->
+    prim_step p vs (val_bool (bool_decide (l1=l2)))
+.
+#[export] Hint Constructors prim_step : prim_step.
 
 (* A head step *)
 Inductive head_step : nat -> tm -> store -> tm -> store -> Prop :=
@@ -27,17 +43,18 @@ Inductive head_step : nat -> tm -> store -> tm -> store -> Prop :=
     head_step s
       (tm_call t1 ts) σ
       (substs' (zip (self::args) (val_code self args body::vs)) body) σ
-| HeadIf : forall s σ t1 t2 t3 n,
-    t1 = tm_val (val_nat n) ->
+| HeadCallPrim : forall s σ t1 p ts vs v,
+    t1 = tm_val (val_prim p) ->
+    ts = fmap tm_val vs ->
+    prim_step p vs v ->
+    head_step s
+      (tm_call t1 ts) σ
+      (tm_val v) σ
+| HeadIf : forall s σ t1 t2 t3 b,
+    t1 = tm_val (val_bool b) ->
     head_step s
       (tm_if t1 t2 t3) σ
-      (if decide (n ≠ 0) then t2 else t3) σ
-| HeadBinOp : forall s σ t1 t2 n m op,
-    t1 = tm_val (val_nat n) ->
-    t2 = tm_val (val_nat m) ->
-    head_step s
-      (tm_bin_op op t1 t2) σ
-      (tm_val (val_nat (exec_bin_op op n m))) σ
+      (if b then t2 else t3) σ
 | HeadAlloc : forall s σ σ' l t1 n bs,
     σ !! l = None →
     t1 = tm_val (val_nat n) ->
@@ -94,26 +111,12 @@ Qed.
 Ltac rev_inject H :=
   injection H; intros <-.
 
-Lemma invert_head_step_if s n t1 t2 σ t' σ' :
-  head_step s (tm_if (tm_val (val_nat n)) t1 t2) σ t' σ' ->
-  σ = σ' ∧ ((n ≠ 0 ∧ t' = t1) ∨ (n = 0 ∧ t' = t2)).
+Lemma invert_head_step_if s b t1 t2 σ t' σ' :
+  head_step s (tm_if (tm_val (val_bool b)) t1 t2) σ t' σ' ->
+  σ = σ' ∧ (t' = if b then t1 else t2).
 Proof.
   inversion_clear 1.
-  rev_inject H0.
-  split; try easy.
-  destruct (decide (n = 0)).
-  { rewrite decide_False; try easy. now right. }
-  { rewrite decide_True; try easy.  now left. }
-Qed.
-
-Lemma invert_head_step_bin_op s op (n m:nat) σ t' σ' :
-  head_step s (tm_bin_op op n m) σ t' σ' ->
-  σ = σ' ∧ t' = tm_val (val_nat (exec_bin_op op n m)).
-Proof.
-  inversion_clear 1.
-  rev_inject H0.
-  rev_inject H1.
-  easy.
+  rev_inject H0. eauto.
 Qed.
 
 Lemma invert_head_step_load s (l:loc) (n:nat) σ t' σ' :
@@ -153,4 +156,17 @@ Proof.
   apply fmap_inj in H1.
   2:{ intros ? ? E. now injection E. }
   rev_inject H0. intros. subst. eauto.
+  inversion H0.
+Qed.
+
+Lemma invert_head_step_call_prim s prim vs σ t' σ' :
+  head_step s (tm_call (val_prim prim) (fmap tm_val vs)) σ t' σ' ->
+  σ = σ' ∧ exists v, t' = tm_val v /\ prim_step prim vs v.
+Proof.
+  inversion_clear 1.
+  inversion H0.
+  rev_inject H0.
+  apply fmap_inj in H1.
+  2:{ intros ? ? E. now injection E. }
+  subst. eauto.
 Qed.

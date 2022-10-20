@@ -50,10 +50,10 @@ Proof.
   by unfold locs.
 Qed.
 
-Lemma reducible_if maxsize r n t1 t2 σ :
-  reducible maxsize r (tm_if (tm_val (val_nat n)) t1 t2) σ.
+Lemma reducible_if maxsize r b t1 t2 σ :
+  reducible maxsize r (tm_if (tm_val (val_bool b)) t1 t2) σ.
 Proof.
-  destruct (decide (n=0)).
+  destruct b.
   { eexists _,_.
     eapply AltRedGCHead;
     eauto using gc_id with head_step. }
@@ -78,11 +78,23 @@ Qed.
 Ltac reduce_easy :=
   eexists _,_;
   eapply AltRedGCHead;
-  [ apply gc_id | eauto with head_step].
+  [ apply gc_id | eauto with head_step prim_step ].
 
-Lemma reducible_bin_op maxsize r op n m σ :
-  reducible maxsize r (tm_bin_op op (tm_val (val_nat n)) (tm_val (val_nat m))) σ.
-Proof. reduce_easy. Qed.
+Lemma reducible_prim maxsize r p vs σ :
+  match p,vs with
+  | prim_nat_op _, [val_nat _; val_nat _]
+  | prim_eq, [val_loc _; val_loc _]
+  | prim_eq, [val_nat _; val_nat _] => True
+  | _,_ => False end ->
+  reducible maxsize r (tm_call p (tm_val <$> vs)) σ.
+Proof.
+  intros ?.
+
+  destruct p; do 2 (destruct vs as [|?v ?vs]; try easy).
+  all: destruct v; try easy; destruct v0; try easy.
+  all: destruct vs; try easy.
+  all: reduce_easy.
+Qed.
 
 Ltac reduce_store_load :=
   intros ? Hn2;

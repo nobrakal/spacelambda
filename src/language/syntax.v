@@ -9,15 +9,22 @@ From stdpp Require Import binders gmap gmultiset.
 Notation loc := Z.
 
 (* Operations on natural numbers. *)
-Inductive op := OpAdd | OpMul | OpSub.
+Inductive nat_op := OpAdd | OpMul | OpSub.
+
+Inductive prim :=
+| prim_eq : prim
+| prim_nat_op : nat_op -> prim.
 
 (* Values and terms are mutually recursive, as we model code pointers as
    closed terms. *)
 Inductive val : Type :=
 | val_loc : loc -> val
+| val_bool : bool -> val
 | val_nat : nat -> val
 | val_unit : val
-| val_code : binder -> list binder -> tm -> val with
+| val_code : binder -> list binder -> tm -> val
+| val_prim : prim -> val
+with
 tm : Type :=
 (* values *)
 | tm_val : val -> tm
@@ -27,7 +34,6 @@ tm : Type :=
 | tm_var : string -> tm
 | tm_let : binder -> tm -> tm -> tm
 (* naturals *)
-| tm_bin_op : op -> tm -> tm -> tm
 | tm_if : tm -> tm -> tm -> tm
 (* Blocks *)
 | tm_alloc : tm -> tm
@@ -37,6 +43,8 @@ tm : Type :=
 
 Coercion val_nat : nat >-> val.
 Coercion val_loc : loc >-> val.
+Coercion val_bool : bool >-> val.
+Coercion val_prim : prim >-> val.
 Coercion tm_val : val >-> tm.
 Coercion tm_var : string >-> tm.
 
@@ -49,10 +57,10 @@ Global Instance inhabited_tm  : Inhabited tm  := populate (tm_val inhabitant).
 (* A size function for well founded recursion over tm. *)
 Fixpoint tm_size (t : tm):= 1 +
   match t with
-  | tm_var _ => 0
+  | tm_var _  => 0
   | tm_val v => val_size v
   | tm_call t1 xs => tm_size t1 + list_sum (tm_size <$> xs)
-  | tm_let _ t1 t2 | tm_bin_op _ t1 t2 | tm_load t1 t2 => tm_size t1 + tm_size t2
+  | tm_let _ t1 t2 | tm_load t1 t2 => tm_size t1 + tm_size t2
   | tm_alloc t1 => tm_size t1
   | tm_store t1 t2 t3 | tm_if t1 t2 t3 => tm_size t1 + tm_size t2 + tm_size t3
   end with
@@ -73,8 +81,6 @@ Inductive ctx :=
 | ctx_let : binder -> tm -> ctx (* let x = ◻ in t *)
 | ctx_call1 : list val -> ctx (* call ◻ vs *)
 | ctx_call2 : tm -> list val -> list tm -> ctx (* call t (vs ++ ◻ :: ts) *)
-| ctx_bin_op1 : op -> tm -> ctx (* ◻ (op) t *)
-| ctx_bin_op2 : op -> val -> ctx (* v (op) ◻ *)
 | ctx_if : tm -> tm -> ctx (* if ◻ then t1 else t2 *)
 | ctx_alloc : ctx (* alloc ◻ *)
 | ctx_load1 : tm -> ctx (* load ◻ t *)
@@ -89,8 +95,6 @@ Definition fill_item (E:ctx) (t:tm) : tm :=
   | ctx_let x t2 => tm_let x t t2
   | ctx_call1 xs => tm_call t (tm_val <$> xs)
   | ctx_call2 t1 xs ys => tm_call t1 ((tm_val <$> xs) ++ t :: ys)
-  | ctx_bin_op1 op t2 => tm_bin_op op t t2
-  | ctx_bin_op2 op v => tm_bin_op op (tm_val v) t
   | ctx_if t2 t3 => tm_if t t2 t3
   | ctx_alloc => tm_alloc t
   | ctx_load1 t2 => tm_load t t2
@@ -173,7 +177,7 @@ Implicit Type E : ctx.
 Definition val_pointer_list (v:val) : list loc :=
   match v with
   | val_loc l => [l]
-  | val_unit | val_nat _ => []
+  | val_unit | val_nat _ | val_prim _ | val_bool _ => []
   (* We consider code pointers, without any outgoing pointers.
      This is coherent with the substitution defined above, which does not
      substitute inside code pointers. *)
@@ -226,7 +230,6 @@ Fixpoint locs_tm (t:tm) : gset loc :=
   | tm_call t1 xs => locs_tm t1 ∪ ⋃ (locs_tm <$> xs)
   | tm_let _ t1 t2 => locs_tm t1 ∪ locs_tm t2
   | tm_var _ => ∅
-  | tm_bin_op _ t1 t2 => locs_tm t1 ∪ locs_tm t2
   | tm_if t1 t2 t3 => locs_tm t1 ∪ locs_tm t2 ∪ locs_tm t3
   | tm_alloc t1 => locs_tm t1
   | tm_load t1 t2 => locs_tm t1 ∪ locs_tm t2
@@ -240,8 +243,6 @@ Definition locs_ctx (k:ctx) : gset loc :=
   | ctx_let _ t2 => locs_tm t2
   | ctx_call1 xs => ⋃ (locs_val <$> xs)
   | ctx_call2 t1 xs ys => locs_tm t1 ∪ ⋃ (locs_val <$> xs) ∪ ⋃ (locs_tm <$> ys)
-  | ctx_bin_op1 _ t2 => locs_tm t2
-  | ctx_bin_op2 _ v => locs_val v
   | ctx_if t2 t3 => locs_tm t2 ∪ locs_tm t3
   | ctx_alloc => ∅
   | ctx_load1 t2 => locs_tm t2
