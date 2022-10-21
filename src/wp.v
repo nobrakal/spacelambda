@@ -481,8 +481,8 @@ Proof.
   set_solver.
 Qed.
 
-Lemma wp_if_later b n t1 t2 Q :
-   ▷ (if (decide (n ≠ 0)) then wp b t1 Q else wp b t2 Q)
+Lemma wp_if_later b (n:bool) t1 t2 Q :
+   ▷ (if n then wp b t1 Q else wp b t2 Q)
     -∗ wp b (tm_if n t1 t2) Q.
 Proof.
   iIntros "Hwp".
@@ -500,19 +500,15 @@ Proof.
   destruct Hstep as (Hgc & Hif).
   rewrite -union_assoc_L in Hgc.
   iModIntro.
-  destruct Hif as [(Hn&Ht1)|(Hn&Ht2)]; subst; simpl.
-  { rewrite decide_True //. iFrame.
-    iApply interp_gc_weak; try iFrame.
-    2:{ apply Hgc. }
+  destruct n; subst; simpl; iFrame.
+  { iApply (interp_gc_weak with "[$]"); eauto.
     set_solver. }
-  { iFrame.
-    iApply interp_gc_weak; try iFrame.
-    2:{ apply Hgc. }
+  { iApply (interp_gc_weak with "[$]"); eauto.
     set_solver. }
 Qed.
 
-Lemma wp_if b n t1 t2 Q :
-  (if (decide (n ≠ 0)) then wp b t1 Q else wp b t2 Q)
+Lemma wp_if b (n:bool) t1 t2 Q :
+  (if n then wp b t1 Q else wp b t2 Q)
   -∗ wp b (tm_if n t1 t2) Q.
 Proof. iIntros. iApply wp_if_later. iModIntro. eauto. Qed.
 

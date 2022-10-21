@@ -49,13 +49,12 @@ Definition stack_pop : val :=
 Definition stack_is_empty : val :=
   λ: [["l"]],
     let: "size" := "l".[1] in
-    1 '- "size".
+    "size" '== 0.
 
 Definition stack_is_full : val :=
   λ: [["l"]],
     let: "size" := "l".[1] in
-    let: "moresize" := "size" '+ 1  in
-    "moresize" '- capa.
+    "size" '== capa.
 
 Lemma locs_stack_empty : locs stack_empty = ∅.
 Proof. easy. Qed.
@@ -96,32 +95,30 @@ Ltac destruct_stack Hs :=
 Ltac destruct_chunk Ha :=
   iDestruct Ha as "[%arr [%vs [? [%AInv Hmfa]]]]".
 
-Lemma lengtho_neq_zero_iff_nil A (xs:list A) :
-  1 - length xs ≠ 0 ↔ xs = [].
-Proof. now destruct xs. Qed.
-
 Lemma stack_is_empty_spec `{!interpGS Σ} A (R:A -> val -> iProp Σ) xs s :
   CODE (stack_is_empty [[s]])
   SOUV {[s]}
   PRE  (StackOf R xs s)
-  POST (fun n => ⌜n ≠ 0 <-> xs=nil⌝ ∗ StackOf R xs s).
+  POST (fun (b:bool) => ⌜b = bool_decide (xs=nil)⌝ ∗ StackOf R xs s).
 Proof.
   iIntros "Hs". destruct_stack "Hs". destruct_chunk "Hc".
   wps_nofree.
   iStepsS.
-  eauto using lengtho_neq_zero_iff_nil.
+  destruct xs; by vm_compute.
 Qed.
 
 Lemma stack_is_full_spec `{!interpGS Σ} A (R:A -> val -> iProp Σ) xs s :
   CODE (stack_is_full [[s]])
   SOUV {[s]}
   PRE (StackOf R xs s)
-  POST (fun n => ⌜n ≠ 0 <-> ¬ (size_lt (length xs) capacity)⌝ ∗ StackOf R xs s).
+  POST (fun (b:bool) => ⌜b <-> ¬ (size_lt (length xs) capacity)⌝ ∗ StackOf R xs s).
 Proof.
   iIntros "Hs". destruct_stack "Hs". destruct_chunk "Hc".
+  iDestruct (big_sepL2_length with "[$]") as "%".
   wps_nofree.
   iStepsS.
   destruct AInv as [_ _ ? Hco].
+  rewrite bool_decide_spec.
   unfold capa in *. liago.
 Qed.
 
@@ -190,7 +187,7 @@ Proof.
   wps_bind.
   wps_load.
   wps_bind.
-  iStepS. iStepS.
+  wps_call.
   wps_bind.
   wps_load.
   wps_context c.
@@ -278,7 +275,7 @@ Proof.
   destruct_stack "Hs".
   wps_call.
   wps_bind. wps_load. iIntros.
-  wps_bind. wps_bin_op. iIntros.
+  wps_bind. do 3 iStepS. iIntros.
   wps_bind. wps_load. iIntros.
 
   destruct_chunk "Hc".

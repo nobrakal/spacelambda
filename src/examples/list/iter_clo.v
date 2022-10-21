@@ -59,15 +59,11 @@ Proof.
   destruct xs as [|(x,(qp,qz)) xs].
   { wps_bind.
     wps_apply (list_is_nil_spec A R llst nil) as "(%Hv & ?)".
-    wps_if. rewrite decide_True.
-    2:{ now apply Hv. }
+    wps_if. rewrite Hv.
     wps_val. iFrame. }
   { wps_bind.
     wps_apply list_is_nil_spec as "(%Hv & ?)".
-    wps_if.
-    rewrite decide_False.
-    2:{ intros nv. apply Hv in nv. congruence. }
-    clear Hv.
+    wps_if. rewrite Hv. clear Hv.
 
     simplify_substs.
     wps_bind.

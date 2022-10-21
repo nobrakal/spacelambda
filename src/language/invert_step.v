@@ -85,7 +85,7 @@ Proof.
   intros ? Hstep.
   inversion Hstep; subst;
     destruct E; simpl in *; inversion H0; subst; try easy.
-  eauto using has_to_be_val.
+  all:eauto using has_to_be_val.
 Qed.
 
 Lemma invert_step_context maxsize k E t σ t' σ' :
@@ -105,10 +105,10 @@ Proof.
     eauto using head_step_no_ctx. }
 Qed.
 
-Lemma invert_step_if maxsize k (n:nat) t1 t2 σ t' σ' :
-  alt_reduction maxsize k (tm_if n t1 t2) σ t' σ' ->
+Lemma invert_step_if maxsize k (b:bool) t1 t2 σ t' σ' :
+  alt_reduction maxsize k (tm_if b t1 t2) σ t' σ' ->
   gc (k ∪ locs t1 ∪ locs t2) σ σ' /\
-    ((n ≠ 0 /\ t' = t1) \/ (n = 0 /\ t' = t2)).
+    (t' = if b then t1 else t2).
 Proof.
   invert_head.
   { cannot_be_distant. }
@@ -138,18 +138,6 @@ Proof.
     by rewrite H. }
   { rewrite right_id_L in H; try apply _.
     rewrite H2l. easy. }
-Qed.
-
-Lemma invert_step_bin_op maxsize k op (n m:nat) σ t' σ' :
-  alt_reduction maxsize k (tm_bin_op op n m) σ t' σ' ->
-  gc k σ σ' ∧ t' = tm_val (val_nat (exec_bin_op op n m)).
-Proof.
-  invert_head.
-  { cannot_be_distant. }
-  destruct (invert_head_step_bin_op Hdstep) as (->,?).
-  split; try easy.
-  apply (gc_weak H).
-  set_solver.
 Qed.
 
 Lemma invert_step_load maxsize k (l:loc) (n:nat) σ t' σ' :
@@ -183,23 +171,42 @@ Proof.
   easy.
 Qed.
 
+Lemma call_cannot_be_distant maxsize σ1' σ' p vs:
+  ∀ (E : ctx) (t t'0 : tm),
+    tm_call (tm_val p) (tm_val <$> vs) = fill_item E t → step maxsize t σ1' t'0 σ' → False.
+Proof.
+  intros [] ? ? ; try easy; simpl;
+    intros E; injection E; clear E.
+  { intros _ ? Hd. apply step_no_val in Hd. subst. easy. }
+  intros E.
+  assert (exists v, t0 = tm_val v) as (?,->).
+  { apply (f_equal (lookup (length l))) in E.
+    rewrite list_lookup_fmap, list_lookup_middle in E; try easy.
+    destruct (vs !! length l); try easy. injection E.
+    intros <-. now eexists. now rewrite fmap_length. }
+  intros _ Hd. apply step_no_val in Hd. easy.
+Qed.
+
 Lemma invert_step_call maxsize r self args body vs σ t' σ' :
   alt_reduction maxsize r (tm_call (val_code self args body) (fmap tm_val vs)) σ t' σ' ->
   gc (r ∪ locs vs) σ σ' /\ t' = substs' (zip (self::args) (val_code self args body::vs)) body.
 Proof.
   invert_head.
-  { intros [] ? ?; try easy; simpl;
-      intros E; injection E; clear E.
-    { intros _ ? Hd. apply step_no_val in Hd. subst. easy. }
-    intros E.
-    assert (exists v, t0 = tm_val v) as (?,->).
-    { apply (f_equal (lookup (length l))) in E.
-      rewrite list_lookup_fmap, list_lookup_middle in E; try easy.
-      destruct (vs !! length l); try easy. injection E.
-      intros <-. now eexists. now rewrite fmap_length. }
-    intros _ Hd. apply step_no_val in Hd. easy. }
+  { eauto using call_cannot_be_distant. }
   apply invert_head_step_call in Hdstep.
   destruct Hdstep as (->&?).
+  split; try easy.
+  apply (gc_weak H). auto_locs.
+  set_solver.
+Qed.
+
+Lemma invert_step_call_prim maxsize k p vs σ t' σ' :
+  alt_reduction maxsize k (tm_call (val_prim p) (fmap tm_val vs)) σ t' σ' ->
+  gc (k ∪ locs vs) σ σ' ∧ exists v, t' = tm_val v /\ eval_call_prim p vs = Some v.
+Proof.
+  invert_head.
+  { eauto using call_cannot_be_distant. }
+  destruct (invert_head_step_call_prim _ Hdstep) as (->,?).
   split; try easy.
   apply (gc_weak H). auto_locs.
   set_solver.

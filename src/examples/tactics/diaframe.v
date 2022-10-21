@@ -103,6 +103,29 @@ Proof.
   iApply (wps_call_tac with "[$]"); eauto.
 Qed.
 
+Lemma wps_call_prim_tac `{!Enc A} X t p ts w (Q:A -> iProp Σ) :
+  t = (val_prim p) ->
+  forallb is_val ts →
+  eval_call_prim p (to_val_force <$> ts) = Some (enc w) ->
+  Q w -∗
+  wps X (tm_call t ts) Q.
+Proof.
+  iIntros. subst.
+  iApply (wps_mono with "[]").
+  iApply wps_call_prim; eauto.
+  { rewrite fmap_to_val_force //. }
+  iIntros. subst. iFrame.
+Qed.
+
+Global Instance wp_call_prim_instance `{!Enc A} X (p:prim) ts (Φ:A -> iProp Σ) :
+  SolveSepSideCondition (forallb is_val ts = true) ->
+  HINT1 empty_hyp_first ✱ [∃ w, ⌜eval_call_prim p (to_val_force <$> ts) = Some (enc w)⌝ ∗ Φ w] ⊫ [id]; wps X (tm_call p ts) Φ.
+Proof.
+  intros.
+  iStepsS.
+  iApply wps_call_prim_tac; eauto.
+Qed.
+
 Lemma locs_to_val_force v :
   is_val v = true ->
   locs (to_val_force v) = locs v.
@@ -186,7 +209,7 @@ Qed.
 
 Definition go_nat t :=
   match t with
-  | tm_bin_op _ _ _ | tm_val (val_nat _) => true
+  | tm_call (prim_nat_op _) _ | tm_val (val_nat _) => true
   | _ => false end.
 Global Instance go_nat_instance_val X t (Φ:val -> iProp Σ):
   SolveSepSideCondition (go_nat t) ->
@@ -226,6 +249,20 @@ Proof.
   eauto.
 Qed.
 
+Definition go_bool t :=
+  match t with
+  | tm_call prim_eq _ | tm_call (prim_bool_op1 _) _ | tm_call (prim_bool_op2 _) _ => true
+  | _ => false end.
+Global Instance go_bool_instance_val X t (Φ:val -> iProp Σ):
+  SolveSepSideCondition (go_bool t) ->
+  HINT1 empty_hyp_first ✱ [wps X t (fun (b:bool) => Φ (enc b))] ⊫ [id]; wps X t Φ.
+Proof.
+  intros.
+  iStepsS.
+  iApply (wps_mono_val with "[$]").
+  eauto.
+Qed.
+
 
 (* ------------------------------------------------------------------------ *)
 (* Rules *)
@@ -239,15 +276,6 @@ Proof.
   iApply wps_load.
   2:iFrame.
   lia.
-  iStepsS.
-Qed.
-
-Global Instance bin_op_instance X (n m:nat) op (Φ:nat -> iProp Σ):
-  HINT1 empty_hyp_first ✱ [Φ (exec_bin_op op n m)] ⊫ [id]; wps X (tm_bin_op op n m) Φ.
-Proof.
-  iStepS.
-  iApply wps_mono.
-  iApply wps_bin_op.
   iStepsS.
 Qed.
 

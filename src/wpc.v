@@ -8,7 +8,7 @@ From spacelambda.language Require Import language.
 From spacelambda Require Import more_space_lang more_maps_and_sets.
 From spacelambda Require Import interp.
 
-From spacelambda Require Import wp_alloc wp_call wp_load wp_bin_op wp_store wp_spec.
+From spacelambda Require Import wp_alloc wp_call wp_load wp_call_prim wp_store wp_spec.
 From spacelambda Require Export wp_enc.
 
 Set Implicit Arguments.
@@ -351,13 +351,13 @@ Proof.
   iApply "Hwp".
 Qed.
 
-Lemma wpc_if (A:Type) (EA:Enc A) r n t1 t2 (Q:A -> iProp Σ) :
-  (if (decide (n ≠ 0)) then wpc r t1 Q else wpc r t2 Q)
+Lemma wpc_if (A:Type) (EA:Enc A) r (n:bool) t1 t2 (Q:A -> iProp Σ) :
+  (if n then wpc r t1 Q else wpc r t2 Q)
     ⊢ wpc r (tm_if n t1 t2) Q.
 Proof.
   start_deriv "Hwpc".
   iApply @wp_enc_if.
-  case_decide; iApply "Hwpc"; eauto.
+  destruct n; iApply "Hwpc"; eauto.
 Qed.
 
 Lemma wpc_call (A:Type) (EA:Enc A) r self args body vs ts (Q:A -> iProp Σ) :

@@ -65,14 +65,14 @@ Module Type StackOf.
       CODE (stack_is_empty [[s]])
       SOUV {[s]}
       PRE  (StackOf R xs s)
-      POST (fun n => ⌜n ≠ 0 <-> xs=nil⌝ ∗ StackOf R xs s).
+      POST (fun b => ⌜b=bool_decide (xs=nil)⌝ ∗ StackOf R xs s).
 
   Axiom stack_is_full_spec : forall `{interpGS Σ} A (R:A -> val -> iProp Σ),
     forall xs s,
       CODE (stack_is_full [[s]])
       SOUV {[s]}
       PRE (StackOf R xs s)
-      POST (fun n => ⌜n ≠ 0 <-> ¬ (size_lt (length xs) capacity)⌝ ∗ StackOf R xs s).
+      POST (fun (b:bool) => ⌜ b <-> (¬ (size_lt (length xs) capacity))⌝ ∗ StackOf R xs s).
 
   Axiom stack_free : forall `{interpGS Σ} A (R:A -> val -> iProp Σ),
     forall s xs,
@@ -128,7 +128,7 @@ Lemma stack_is_empty_spec_dominant `{interpGS Σ} A (R:A -> val -> iProp Σ) qp 
   CODE (stack_is_empty [[s]])
   SOUV {[s]}
   PRE  (StackDominantOf R qp xs s)
-  POST (fun n => ⌜n ≠ 0 <-> xs=nil⌝ ∗ StackDominantOf R qp xs s).
+  POST (fun b => ⌜b=bool_decide (xs=nil)⌝ ∗ StackDominantOf R qp xs s).
 Proof.
   iIntros.
   wps_apply @stack_is_empty_spec as (?) "(%E & ?)".
@@ -140,7 +140,7 @@ Lemma stack_is_full_spec_dominant `{interpGS Σ} A (R:A -> val -> iProp Σ) qp x
   CODE (stack_is_full [[s]])
   SOUV {[s]}
   PRE  (StackDominantOf R qp xs s)
-  POST (fun n => ⌜n ≠ 0 <-> ¬ (size_lt (length xs) capacity)⌝ ∗ StackDominantOf R qp xs s).
+  POST (fun (b:bool) => ⌜b <-> ¬ (size_lt (length xs) capacity)⌝ ∗ StackDominantOf R qp xs s).
 Proof.
   iIntros.
   wps_apply @stack_is_full_spec as (?) "(? & ?)".
@@ -260,7 +260,7 @@ Lemma stack_is_empty_spec `{interpGS Σ} xs s :
   CODE (stack_is_empty [[s]])
   SOUV {[s]}
   PRE  (Stack xs s)
-  POST (fun n => ⌜n ≠ 0 <-> xs=nil⌝ ∗ Stack xs s).
+  POST (fun b => ⌜b=bool_decide (xs=nil)⌝ ∗ Stack xs s).
 Proof.
   iIntros.
   wps_apply stack_is_empty_spec as "(% & ?)".
@@ -272,7 +272,7 @@ Lemma stack_is_full_spec `{interpGS Σ} xs s :
   CODE (stack_is_full [[s]])
   SOUV {[s]}
   PRE (Stack xs s)
-  POST (fun n => ⌜n ≠ 0 <-> ¬ (size_lt (length xs) capacity)⌝ ∗ Stack xs s).
+  POST (fun (b:bool) => ⌜b <-> ¬ (size_lt (length xs) capacity)⌝ ∗ Stack xs s).
 Proof.
   iIntros.
   wps_apply stack_is_full_spec as "(%E & ?)".

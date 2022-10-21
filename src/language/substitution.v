@@ -10,7 +10,7 @@ From spacelambda.language Require Import syntax.
 (* Usual substitution, avoiding capture. *)
 Fixpoint subst (x:string) (v:val) (t:tm) : tm :=
   match t with
-  | tm_val v =>
+  | tm_val _ =>
       t (* We do not substitute inside code pointers. *)
   | tm_call t1 xs => tm_call (subst x v t1) ((subst x v) <$> xs)
   | tm_var y =>
@@ -18,7 +18,6 @@ Fixpoint subst (x:string) (v:val) (t:tm) : tm :=
   | tm_let y t1 t2 =>
       let st1 := subst x v t1 in
       if (decide (BNamed x=y)) then tm_let y st1 t2 else tm_let y st1 (subst x v t2)
-  | tm_bin_op op t1 t2 => tm_bin_op op (subst x v t1) (subst x v t2)
   | tm_if t1 t2 t3 => tm_if (subst x v t1) (subst x v t2) (subst x v t3)
   | tm_alloc t1 =>  tm_alloc (subst x v t1)
   | tm_load t1 t2 => tm_load (subst x v t1) (subst x v t2)
@@ -36,54 +35,6 @@ Definition substs' (xlvs : list (binder * val)) (i : tm) : tm :=
   foldr (fun '(x, lv) => subst' x lv) i xlvs.
 
 (* ------------------------------------------------------------------------ *)
-(* Locs *)
-
-Local Ltac ih_for H x v t :=
-  assert (locs (subst x v t) ⊆ locs v ∪ locs t) by (apply H; simpl; lia).
-
-(* The only path I know for this proof involves well founded induction.
-   Thankfully, it is not too hard.  *)
-Lemma locs_subst x v t :
-  locs (subst x v t) ⊆ locs v ∪ locs t.
-Proof.
-  induction t using (well_founded_induction (wf_inverse_image _ nat _ tm_size PeanoNat.Nat.lt_wf_0)).
-  destruct t; simpl;
-    try (ih_for H x v t); try (ih_for H x v t1);
-    try (ih_for H x v t2); try (ih_for H x v t3).
-  1,5,6,7,8,9: set_solver.
-  2,3:case_decide; set_solver.
-  induction l.
-  { set_solver. }
-  { assert  (∀ y : tm, tm_size y < tm_size (tm_call t l) → locs (subst x v y) ⊆ locs v ∪ locs y) as IHt.
-    { intros ? Ht. apply H.
-      transitivity (tm_size (tm_call t l)); try easy.
-      simpl. pose proof (tm_size_non_zero a). unfold "<$>". lia. }
-    apply IHl in IHt. clear IHl.
-    rewrite fmap_cons. unfold locs, locs_tm in *. simpl in *.
-    ih_for H x v a.
-    set_solver. }
-Qed.
-
-Lemma locs_substs ls t :
-  locs (substs ls t) ⊆ locs (snd <$> ls) ∪ locs t.
-Proof.
-  induction ls as [|(x,v) ls].
-  { set_solver. }
-  pose proof (locs_subst x v (substs ls t)).
-  set_solver.
-Qed.
-
-Lemma locs_substs' ls t :
-  locs (substs' ls t) ⊆ locs (snd <$> ls) ∪ locs t.
-Proof.
-  induction ls as [|(x,v) ls].
-  { set_solver. }
-  destruct x as [|x]; try set_solver.
-  pose proof (locs_subst x v (substs' ls t)).
-  set_solver.
-Qed.
-
-(* ------------------------------------------------------------------------ *)
 (* FV *)
 
 Definition binder_set (b : binder) : stringset :=
@@ -96,11 +47,11 @@ Definition set_of_args (args : list binder) := ⋃ (List.map binder_set args).
 
 Fixpoint free_variables (t:tm) : stringset :=
   match t with
-  | tm_val v => ∅ (* No free variables in code pointers *)
+  | tm_val v  => ∅ (* No free variables in code pointers *)
   | tm_call t ts => free_variables t ∪ ⋃ (List.map free_variables ts)
   | tm_var x => binder_set x
   | tm_alloc t => free_variables t
-  | tm_bin_op _ t1 t2 | tm_load t1 t2 => free_variables t1 ∪ free_variables t2
+  | tm_load t1 t2 => free_variables t1 ∪ free_variables t2
   | tm_if t1 t2 t3 | tm_store t1 t2 t3 => free_variables t1 ∪ free_variables t2 ∪ free_variables t3
   | tm_let x t1 t2 => free_variables t1 ∪ (free_variables t2 ∖ binder_set x)
   end.
@@ -213,4 +164,73 @@ Proof.
   simpl. rewrite (subst_subst_commut x v). rewrite IHfs.
   easy.
   set_solver. simpl in *. unfold set_of_args in *. set_solver.
+Qed.
+
+(* ------------------------------------------------------------------------ *)
+(* Locs *)
+
+Local Ltac rewih H t :=
+  rewrite (H t) by (simpl; lia).
+
+Lemma locs_subst_precise x v t :
+  locs (subst x v t) = locs t ∪ if (decide (x ∈ free_variables t)) then locs v else ∅.
+Proof.
+  induction t using (well_founded_induction (wf_inverse_image _ nat _ tm_size PeanoNat.Nat.lt_wf_0)).
+  destruct t; simpl; auto_locs;
+    try (rewih H t); try (rewih H t1);
+    try (rewih H t2); try (rewih H t3); try (rewih H t4).
+  1:set_solver.
+  { induction l.
+    { repeat case_decide; set_solver. }
+    { assert  (∀ y : tm, tm_size y < tm_size (tm_call t l) → locs (subst x v y) = locs y ∪ (if decide (x ∈ free_variables y) then locs v else ∅)) as IHt.
+    { intros ? Ht. apply H.
+      transitivity (tm_size (tm_call t l)); try easy.
+      simpl. pose proof (tm_size_non_zero a). unfold "<$>". lia. }
+    simpl. repeat rewih H a. clear H.
+    apply IHl in IHt.
+    clear IHl.
+    destruct (decide (x ∈ free_variables t)).
+    { rewrite decide_True in IHt by set_solver.
+      destruct (decide (x ∈ free_variables a)).
+      { rewrite decide_True by set_solver. set_solver. }
+      { rewrite decide_True by set_solver. set_solver. } }
+    { destruct (decide (x ∈ free_variables a)).
+      { rewrite decide_True by set_solver.
+        destruct (decide (x ∈ free_variables t ∪ ⋃ map free_variables l)).
+        all:set_solver. }
+      { destruct (decide (x ∈ free_variables t ∪ ⋃ map free_variables l)).
+        { rewrite decide_True by set_solver. set_solver. }
+        { rewrite decide_False by set_solver. set_solver. } } } } }
+  { repeat case_decide; set_solver. }
+  { destruct (decide (BNamed x=b)); auto_locs; rewih H t1.
+    { repeat rewrite <- assoc_L; try apply _. f_equal.
+      repeat case_decide; set_solver. }
+    { rewih H t2. clear H. repeat case_decide; destruct b; set_solver. } }
+  all:clear H; repeat case_decide; set_solver.
+Qed.
+
+Lemma locs_subst x v t :
+  locs (subst x v t) ⊆ locs v ∪ locs t.
+Proof.
+  rewrite locs_subst_precise.
+  case_decide; set_solver.
+Qed.
+
+Lemma locs_substs ls t :
+  locs (substs ls t) ⊆ locs (snd <$> ls) ∪ locs t.
+Proof.
+  induction ls as [|(x,v) ls].
+  { set_solver. }
+  pose proof (locs_subst x v (substs ls t)).
+  set_solver.
+Qed.
+
+Lemma locs_substs' ls t :
+  locs (substs' ls t) ⊆ locs (snd <$> ls) ∪ locs t.
+Proof.
+  induction ls as [|(x,v) ls].
+  { set_solver. }
+  destruct x as [|x]; try set_solver.
+  pose proof (locs_subst x v (substs' ls t)).
+  set_solver.
 Qed.

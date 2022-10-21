@@ -21,7 +21,7 @@ From spacelambda.examples.lib Require Export utils.
 Definition list_is_nil : val :=
   λ: [["l"]],
     let: "tag" := "l".[0] in
-     1 '- "tag".
+    "tag" '== 0.
 
 Definition list_head : val :=
   λ: [["l"]], "l".[1].
@@ -121,7 +121,7 @@ Qed.
 Lemma list_is_nil_spec `{!interpGS Σ} A (R:A -> val -> iProp Σ) l vs :
   CODE (list_is_nil [[l]])
   PRE (ListOf R vs l)
-  POST (fun (n:nat) => ⌜n ≠ 0 <-> vs = nil⌝ ∗ ListOf R vs l).
+  POST (fun (b:bool) => ⌜b = bool_decide (vs=nil)⌝ ∗ ListOf R vs l).
 Proof.
   iIntros "Hl".
   wps_nofree.
@@ -218,7 +218,7 @@ Qed.
 Lemma list_is_nil_spec `{!interpGS Σ} l vs :
   CODE (list_is_nil [[l]])
   PRE  (List vs l)
-  POST (fun (n:nat) => ⌜n ≠ 0 <-> vs = nil⌝ ∗ List vs l).
+  POST (fun (b:bool) => ⌜b = bool_decide (vs=nil)⌝ ∗ List vs l).
 Proof.
   iIntros.
   wps_apply (@list_is_nil_spec _ _ val (fun x y => ⌜x=y⌝)%I); eauto.
@@ -305,7 +305,7 @@ Qed.
 Lemma list_is_nil_spec l vs :
   CODE (list_is_nil [[l]])
   PRE  (List vs l)
-  POST (fun (n:nat) => ⌜n ≠ 0 <-> vs = nil⌝ ∗ List vs l).
+  POST (fun (b:bool) => ⌜b = bool_decide (vs=nil)⌝ ∗ List vs l).
 Proof.
   iIntros.
   wps_apply list_is_nil_spec as "(% & ?)". iFrame. iPureIntro.
