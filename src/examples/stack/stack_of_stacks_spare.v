@@ -62,13 +62,6 @@ Definition stack_empty : val :=
     "stack".[2] <- "front";;
     "stack".
 
-Axiom ptr_eq : val.
-Lemma ptr_eq_spec `{interpGS Σ} (p1 p2:loc) :
-  CODEFF (ptr_eq [[p1, p2]])
-  PRE  (True)
-  POST (fun n => ⌜n ≠ 0 <-> p1=p2⌝).
-Admitted.
-
 Definition stack_push : val :=
   λ: [["v","stack"]],
     let: "front" := "stack".[0] in
@@ -76,7 +69,7 @@ Definition stack_push : val :=
     if: "is_full" then
       let: "newfront" :=
         let: "spare" := "stack".[2] in
-        let: "has_no_spare" := ptr_eq [["spare", "front"]] in
+        let: "has_no_spare" := "front" '== "spare" in
         if: "has_no_spare" then
           let: "newfront" := C.stack_empty [] in
           "spare".[2] <- "newfront";;
@@ -375,7 +368,6 @@ Proof.
   pose proof C.locs_stack_push.
   pose proof P.locs_stack_push.
 
-  assert (locs ptr_eq = ∅). admit.
   wps_call.
   destruct_stack "Hs".
 
@@ -383,15 +375,14 @@ Proof.
   wps_bind.
   wps_apply C.stack_is_full_spec as (n) "[%Hn Hf]". iIntros.
 
-  wps_if.
+  wps_if. destruct n.
 
   (* XXX Spare f g repr predicate. *)
 
-  destruct_decide (decide (n≠0)) as n_eq.
   (* The front is full, we need to push it. *)
-  { apply Hn in n_eq. clear Hn.
-    unfold size_lt in *.
-    destruct C.capacity as [c|] eqn:Hc; try easy.
+  { unfold size_lt in *.
+    destruct C.capacity as [c|] eqn:Hc.
+    2:{ naive_solver. }
     assert (length LF = Pos.to_nat c) as Hlf.
     { destruct Hinv as [_ _ _ Hlf]. rewrite Hc in Hlf. simpl in *. lia. }
     rewrite Hlf potential_full //.
@@ -401,15 +392,11 @@ Proof.
 
     wps_bind. wps_load.
     wps_bind_nofree.
-    wps_apply ptr_eq_spec. iSplitR; first easy.
-    iIntros (b) "%Hfg". rew_enc. simpl.
-    wps_if.
-    destruct_decide (decide (b≠0)) as Hb.
+    wps_call. rew_enc. simpl.
+    wps_if. rewrite bool_decide_decide.
+    case_decide; subst.
     { admit. }
-    { rewrite decide_False //. 2:{ admit. }
-      wps_val.
-      iIntros.
-    }
+    wps_val.
     wps_bind.
     wps_apply (C.stack_empty_spec _ R) as (nf) "(? & ? & ? )".
     iIntros.
