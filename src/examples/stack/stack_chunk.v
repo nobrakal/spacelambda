@@ -275,7 +275,7 @@ Proof.
   destruct_stack "Hs".
   wps_call.
   wps_bind. wps_load. iIntros.
-  wps_bind. wps_bin_op. iIntros.
+  wps_bind. do 3 iStepS. iIntros.
   wps_bind. wps_load. iIntros.
 
   destruct_chunk "Hc".

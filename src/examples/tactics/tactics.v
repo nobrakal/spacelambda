@@ -296,11 +296,6 @@ Tactic Notation "wps_apply" constr(H) "as"  constr(Hpost) :=
 Tactic Notation "wps_apply" constr(H) := wps_apply H as (?) "?".
 
 (******************************************************************************)
-(* wps_bin_op *)
-
-Ltac wps_bin_op := do 3 iStepS.
-
-(******************************************************************************)
 (* Simplify terms with trailing substs *)
 
 Ltac simplify_subst tt :=

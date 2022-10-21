@@ -117,7 +117,7 @@ Proof.
   wps_bind.
   wps_apply get_spec as "(%Hv & ?)". subst. simpl. simpl.
   wps_bind.
-  wps_bin_op.
+  do 3 iStepS.
   wps_apply (set_spec_no_loc r).
   all:easy.
 Qed.

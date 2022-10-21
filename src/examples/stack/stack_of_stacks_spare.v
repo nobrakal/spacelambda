@@ -279,7 +279,7 @@ Proof.
   wps_apply C.stack_is_full_spec as "(%Hnf & ?)".
   wps_bind.
   wps_apply DP.stack_is_full_spec_dominant as "(%Hnt & ?)".
-  wps_bin_op. iIntros.
+  do 3 iStepS. iIntros.
   iSplitR.
   { eauto using stack_is_full_correct. }
   iExists f,t,g,_,_. by iFrame.
