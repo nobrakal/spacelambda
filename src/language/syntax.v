@@ -9,10 +9,14 @@ From stdpp Require Import binders gmap gmultiset.
 Notation loc := Z.
 
 (* Operations on natural numbers. *)
-Inductive nat_op := OpAdd | OpMul | OpSub.
+Inductive nat_op := NatAdd | NatMul | NatSub.
+Inductive bool_op1 := BoolNeg.
+Inductive bool_op2 := BoolAnd | BoolOr.
 
 Inductive prim :=
 | prim_eq : prim
+| prim_bool_op1 : bool_op1 -> prim
+| prim_bool_op2 : bool_op2 -> prim
 | prim_nat_op : nat_op -> prim.
 
 (* Values and terms are mutually recursive, as we model code pointers as

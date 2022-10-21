@@ -73,7 +73,7 @@ Proof.
   subst.
   iMod ("IH" with "[$]") as "[%M (? & %Hdm & Hk)]". iClear "IH". iModIntro.
   destruct (decide (is_loc v)).
-  { destruct v as [l| | |]; try easy.
+  { destruct v; try easy.
     simpl. iDestruct (Stackables_union with "[$]") as "?". iExists _.
     iFrame.
     iSplitR.

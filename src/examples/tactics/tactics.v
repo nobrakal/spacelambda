@@ -578,7 +578,7 @@ Fixpoint llocs_tm_aux acc (t:tm) : list (list loc) :=
   (* We consider only closed functions *)
   | tm_call _ xs => List.fold_left llocs_tm_aux xs acc
   | tm_alloc t1 => llocs_tm_aux acc t1
-  | tm_let _ t1 t2 | tm_bin_op _ t1 t2 | tm_load t1 t2 =>
+  | tm_let _ t1 t2 | tm_load t1 t2 =>
     llocs_tm_aux (llocs_tm_aux acc t1) t2
   | tm_if t1 t2 t3 | tm_store t1 t2 t3 =>
     llocs_tm_aux (llocs_tm_aux (llocs_tm_aux acc t1) t2) t3

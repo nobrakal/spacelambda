@@ -8,7 +8,7 @@ From spacelambda.language Require Import language.
 From spacelambda Require Import more_space_lang more_maps_and_sets.
 From spacelambda Require Import interp.
 
-From spacelambda Require Import wp_alloc wp_call wp_load wp_bin_op wp_store wp_closure wp_spec.
+From spacelambda Require Import wp_alloc wp_call wp_load wp_call_prim wp_store wp_closure wp_spec.
 From spacelambda Require Export wp_enc wpc.
 
 Section Wps.
@@ -123,8 +123,8 @@ Proof.
     iExists _. iFrame. eauto. }
 Qed.
 
-Lemma wps_if (A:Type) (EA:Enc A) X n t1 t2 (Q:A -> iProp Σ) :
-  (if (decide (n ≠ 0)) then wps X t1 Q else wps X t2 Q)
+Lemma wps_if (A:Type) (EA:Enc A) X (n:bool) t1 t2 (Q:A -> iProp Σ) :
+  (if n then wps X t1 Q else wps X t2 Q)
   ⊢ wps X (tm_if n t1 t2) Q.
 Proof.
   destruct X; [ apply wpc_if | apply wp_enc_if ].
@@ -222,12 +222,15 @@ Proof.
   iIntros. rewrite post_val. eauto.
 Qed.
 
-Lemma wps_bin_op X op (n m:nat) :
-  ⊢ wps X (tm_bin_op op n m) (fun (r:nat) => ⌜r = exec_bin_op op n m⌝).
+Lemma wps_call_prim (A:Type) (EA:Enc A) X (p:prim) ts (vs:list val) (w:A) :
+  ts = tm_val <$> vs →
+  eval_call_prim p vs = Some (enc w) ->
+  ⊢ wps X (tm_call p ts) (fun r => ⌜r = w⌝).
 Proof.
+  intros. subst.
   start_deriv.
-  { iApply wp_bin_op. }
-  iIntros. subst. rewrite post_nat. eauto.
+  { iApply wp_call_prim. eauto. }
+  iIntros. subst. iExists _. eauto.
 Qed.
 
 Lemma wps_alloc X (n:nat) :

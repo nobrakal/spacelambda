@@ -9,7 +9,7 @@ From spacelambda Require Import more_space_lang more_maps_and_sets.
 From spacelambda Require Export utils interp.
 
 From spacelambda Require Import wp_closure wp_spec.
-From spacelambda Require Import interp wp_alloc wp_call wp_load wp_bin_op wp_store.
+From spacelambda Require Import interp wp_alloc wp_call wp_load wp_call_prim wp_store.
 
 (******************************************************************************)
 
@@ -17,6 +17,7 @@ Class Enc (A:Type) := enc : A -> val.
 Global Instance Enc_unit : Enc unit := fun _ => val_unit.
 Global Instance Enc_nat : Enc nat := val_nat.
 Global Instance Enc_loc : Enc loc := val_loc.
+Global Instance Enc_bool : Enc bool := val_bool.
 Global Instance Enc_val : Enc val := id.
 
 Lemma enc_unit (x:unit) :
@@ -37,6 +38,12 @@ Proof. easy. Qed.
 Global Instance inj_enc_loc : @Inj loc val (=) (=) enc.
 Proof. intros ? ? E. injection E. easy. Qed.
 
+Lemma enc_bool (x:bool) :
+  enc x = val_bool x.
+Proof. easy. Qed.
+Global Instance inj_enc_bool : @Inj bool val (=) (=) enc.
+Proof. intros ? ? E. injection E. easy. Qed.
+
 Lemma enc_val (x:val) :
   enc x = x.
 Proof. easy. Qed.
@@ -47,6 +54,7 @@ Ltac rew_enc_step tt :=
   first [ rewrite enc_unit
         | rewrite enc_nat
         | rewrite enc_loc
+        | rewrite enc_bool
         | rewrite enc_val ].
 
 Ltac rew_enc_core tt :=
@@ -165,13 +173,13 @@ Proof.
   by iApply "HQ".
 Qed.
 
-Lemma wp_enc_if `{!interpGS Σ} (A:Type) (EA:Enc A) b n t1 t2 Q :
-  (if (decide (n≠0)) then wp_enc b t1 Q else wp_enc b t2 Q)
+Lemma wp_enc_if `{!interpGS Σ} (A:Type) (EA:Enc A) b (n:bool) t1 t2 Q :
+  (if n then wp_enc b t1 Q else wp_enc b t2 Q)
     ⊢ wp_enc b (tm_if n t1 t2) Q.
 Proof.
   iIntros.
   iApply wp_if.
-  now case_decide.
+  now destruct n.
 Qed.
 
 Lemma wp_enc_nofree `{!interpGS Σ} (A:Type) (EA:Enc A) b t Q :

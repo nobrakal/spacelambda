@@ -115,7 +115,8 @@ Proof.
   wps_call.
   wps_nofree.
   wps_bind.
-  wps_apply get_spec as "(%Hv & ?)". subst. simpl.
+  wps_apply get_spec as "(%Hv & ?)". subst. simpl. simpl.
+  wps_bind.
   wps_bin_op.
   wps_apply (set_spec_no_loc r).
   all:easy.

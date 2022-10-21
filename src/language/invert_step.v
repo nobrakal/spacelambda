@@ -202,12 +202,12 @@ Qed.
 
 Lemma invert_step_call_prim maxsize k p vs σ t' σ' :
   alt_reduction maxsize k (tm_call (val_prim p) (fmap tm_val vs)) σ t' σ' ->
-  gc k σ σ' ∧ exists v, t' = tm_val v /\ prim_step p vs v.
+  gc (k ∪ locs vs) σ σ' ∧ exists v, t' = tm_val v /\ eval_call_prim p vs = Some v.
 Proof.
   invert_head.
   { eauto using call_cannot_be_distant. }
   destruct (invert_head_step_call_prim _ Hdstep) as (->,?).
   split; try easy.
-  apply (gc_weak H).
+  apply (gc_weak H). auto_locs.
   set_solver.
 Qed.

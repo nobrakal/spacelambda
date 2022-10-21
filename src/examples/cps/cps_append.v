@@ -104,8 +104,7 @@ Proof.
 
     wps_apply list_is_nil_spec as (v) "(%Hv & ?)". simpl.
     iIntros "(((? & ?) & ?) & H1)".
-    wps_if. rewrite decide_True.
-    2:{ now apply Hv. }
+    wps_if. rewrite Hv.
 
     simplify_substs.
     iDestruct (Stackable_confront l1 l2 with "[$]") as "%".
@@ -137,9 +136,7 @@ Proof.
 
     wps_apply list_is_nil_spec as (v) "(%Hv & ?)". simplify_substs.
     iIntros.
-    wps_if.
-    rewrite decide_False.
-    2:{ intros E. apply Hv in E. easy. }
+    wps_if. rewrite Hv. clear Hv.
 
     iApply (@wps_let_tac loc _ _ _ {[l1;cont;self]} with "[$]").
     { auto_locs. locs_mk_clo tt. auto_locs. set_solver. }
@@ -335,8 +332,7 @@ Proof.
 
     wps_apply list_is_nil_spec as (v) "(%Hv & ?)". simpl.
     iIntros "((? & ?) & H1)".
-    wps_if. rewrite decide_True.
-    2:{ now apply Hv. }
+    wps_if. rewrite Hv.
 
     simplify_substs.
 
@@ -363,9 +359,7 @@ Proof.
 
     wps_apply list_is_nil_spec as (v) "(%Hv & ?)". simplify_substs.
     iIntros.
-    wps_if.
-    rewrite decide_False.
-    2:{ intros E. apply Hv in E. easy. }
+    wps_if. rewrite Hv.
 
     iApply (@wps_let_tac loc _ _ _ {[l1;cont;self]} with "[$]").
     { auto_locs. locs_mk_clo tt. auto_locs. set_solver. }

@@ -45,9 +45,7 @@ Proof.
   iRevert (xs ys Lys).
   iInduction Lxs as [|(x,(q,p)) Lxs] "IH"; iIntros (xs ys Lys) "(Hxs1 & Hxs2 & Hxs3 & Hys1 & Hys2 & Hys3)".
   all: wps_call; wps_bind; wps_apply list_is_nil_spec as (b) "(%Hb & Hxs1)"; iIntros "(? & ?)".
-  { wps_if. rewrite decide_True.
-    2:{ apply Hb. easy. }
-
+  { wps_if. rewrite Hb.
     wps_context ys.
     iApply @wps_esupd.
     { set_solver. }
@@ -57,8 +55,7 @@ Proof.
     iIntros "(? & _ & _)".
     wps_val. iIntros.
     iFrame. conclude_diamonds. }
-  wps_if. rewrite decide_False.
-  2:{ intros E. apply Hb in E. easy. }
+  wps_if. rewrite Hb. simpl.
   wps_bind.
   wps_apply list_head_spec as (hd) "(? & Hmhd & ? & ?)".
   iIntros "(? & ?)".
@@ -139,12 +136,9 @@ Proof.
   iStartProof.
   iRevert (xs ys Lys).
   iInduction Lxs as [|(x,(q,p)) Lxs] "IH"; iIntros (xs ys Lys) "(Hdiams & Hxs & Hys1 & Hys2 & Hys3)".
-  all: wps_call; wps_bind; wps_apply list_is_nil_spec as (b) "(%Hb & Hxs)"; iIntros.
-  { wps_if. rewrite decide_True.
-    2:{ apply Hb. easy. }
-    wps_val. iFrame. }
-  wps_if. rewrite decide_False.
-  2:{ intros E. apply Hb in E. easy. }
+  all: wps_call; wps_bind; wps_apply list_is_nil_spec as (b) "(%Hb & Hxs)"; iIntros;
+    wps_if; rewrite Hb.
+  { wps_val. iFrame. }
   wps_bind.
   wps_apply list_head_spec as (hd) "(%Hx & Hmhd & Hchd & ?)". subst.
   iIntros.

@@ -50,16 +50,15 @@ Proof.
   by unfold locs.
 Qed.
 
+Ltac reduce_easy :=
+  eexists _,_;
+  eapply AltRedGCHead;
+  eauto using gc_id with head_step.
+
 Lemma reducible_if maxsize r b t1 t2 σ :
   reducible maxsize r (tm_if (tm_val (val_bool b)) t1 t2) σ.
 Proof.
-  destruct b.
-  { eexists _,_.
-    eapply AltRedGCHead;
-    eauto using gc_id with head_step. }
-  { eexists _,_.
-    eapply AltRedGCHead;
-    eauto using gc_id with head_step. }
+  destruct b; reduce_easy.
 Qed.
 
 Lemma reducible_alloc maxsize r n σ :
@@ -75,25 +74,16 @@ Proof.
   apply is_fresh.
 Qed.
 
-Ltac reduce_easy :=
-  eexists _,_;
-  eapply AltRedGCHead;
-  [ apply gc_id | eauto with head_step prim_step ].
-
 Lemma reducible_prim maxsize r p vs σ :
-  match p,vs with
-  | prim_nat_op _, [val_nat _; val_nat _]
-  | prim_eq, [val_loc _; val_loc _]
-  | prim_eq, [val_nat _; val_nat _] => True
-  | _,_ => False end ->
+  is_Some (eval_call_prim p vs) ->
   reducible maxsize r (tm_call p (tm_val <$> vs)) σ.
 Proof.
-  intros ?.
-
-  destruct p; do 2 (destruct vs as [|?v ?vs]; try easy).
-  all: destruct v; try easy; destruct v0; try easy.
-  all: destruct vs; try easy.
-  all: reduce_easy.
+  intros (?,E).
+  destruct p.
+  all: do 2 (try destruct vs as [|?v ?vs]; simpl in E; try congruence).
+  all: try destruct b; try destruct v; simpl in E; try congruence; try destruct v0; simpl in E; try congruence.
+  all: try destruct vs; try congruence.
+  all: injection E; intros; subst; reduce_easy.
 Qed.
 
 Ltac reduce_store_load :=

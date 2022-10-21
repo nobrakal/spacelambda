@@ -148,17 +148,25 @@ Notation "dst .[ ofs ] <- src" :=
 (* Op *)
 
 Notation "x '+ y" :=
-  (tm_call (val_prim (prim_nat_op OpAdd)) [x;y]%T)
+  (tm_call (val_prim (prim_nat_op NatAdd)) [x:tm;y:tm]%T)
     (at level 10 ) : tm_scope.
 
 Notation "x '- y" :=
-  (tm_call (val_prim (prim_nat_op OpSub)) [x;y]%T)
+  (tm_call (val_prim (prim_nat_op NatSub)) [x:tm;y:tm]%T)
     (at level 10 ) : tm_scope.
 
 Notation "x '* y" :=
-  (tm_call (val_prim (prim_nat_op OpMul)) [x;y]%T)
+  (tm_call (val_prim (prim_nat_op NatMul)) [x:tm;y:tm]%T)
     (at level 10 ) : tm_scope.
 
 Notation "x '== y" :=
-  (tm_call (val_prim (prim_eq)) [x;y]%T)
+  (tm_call (val_prim (prim_eq)) [x:tm;y:tm]%T)
+    (at level 10 ) : tm_scope.
+
+Notation "x '&& y" :=
+  (tm_call (val_prim (prim_bool_op2 BoolAnd)) [x:tm;y:tm]%T)
+    (at level 10 ) : tm_scope.
+
+Notation "x '|| y" :=
+  (tm_call (val_prim (prim_bool_op2 BoolOr)) [x:tm;y:tm]%T)
     (at level 10 ) : tm_scope.

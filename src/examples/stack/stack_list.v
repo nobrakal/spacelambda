@@ -43,7 +43,7 @@ Definition stack_is_empty : val :=
     list_is_nil [["l"]].
 
 Definition stack_is_full : val :=
-  λ: [["_"]], 0.
+  λ: [["_"]], false.
 
 Lemma locs_stack_empty : locs stack_empty = ∅.
 Proof. easy. Qed.
@@ -79,7 +79,7 @@ Lemma stack_is_empty_spec `{!interpGS Σ} A (R:A -> val -> iProp Σ) xs s :
   CODE (stack_is_empty [[s]])
   SOUV {[s]}
   PRE  (StackOf R xs s)
-  POST (fun n => ⌜n ≠ 0 <-> xs=nil⌝ ∗ StackOf R xs s).
+  POST (fun b => ⌜b=bool_decide (xs=nil)⌝ ∗ StackOf R xs s).
 Proof.
   iIntros "Hs".
   destruct_stack "Hs".
@@ -93,9 +93,9 @@ Qed.
 
 Lemma stack_is_full_spec `{!interpGS Σ} A (R:A -> val -> iProp Σ) xs s :
   CODE (stack_is_full [[s]])
-  SOUV {[s]}
-  PRE (StackOf R xs s)
-  POST (fun n => ⌜n ≠ 0 <-> ¬ (size_lt (length xs) capacity)⌝ ∗ StackOf R xs s).
+    SOUV {[s]}
+    PRE (StackOf R xs s)
+    POST (fun (b:bool) => ⌜ b <-> (¬ (size_lt (length xs) capacity))⌝ ∗ StackOf R xs s).
 Proof. iStepsS. Qed.
 
 Lemma stack_empty_spec `{!interpGS Σ} A (R:A -> val -> iProp Σ) :

@@ -51,14 +51,13 @@ Qed.
 
 Definition array_copy : val :=
   μ: "self", [["dst", "src", "i", "n"]],
-    let: "neq" := "n" '- "i" in
-    if: "neq" then
+    let: "eq" := "n" '== "i" in
+    if: "eq" then ()%V
+    else
       let: "x" := "src".["i"] in
       "dst".["i"] <- "x";;
-      let: "i" := "i" '+ ^1 in
-      "self" [["dst", "src", "i", "n"]]
-    else
-      ()%V.
+      let: "i" := "i" '+ 1 in
+      "self" [["dst", "src", "i", "n"]].
 
 Lemma array_copy_spec `{!interpGS Σ} dst src qz src1 src2 src3 dst1 dst3 :
   qz ≠ 0%Qz ->
@@ -78,17 +77,18 @@ Proof.
     iIntros "(? & ? & ?)".
   - wps_call.
     (* we establish that the condition is false *)
-    wps_bind. wps_val.
-    replace (_ - _) with 0 by lia.
-    wps_if.
+    wps_bind. wps_call.
+    rewrite Nat.add_0_r.
+    wps_if. rewrite bool_decide_eq_true_2 //.
     wps_val.
     iFrame.
 
   - wps_call.
     iDestruct select (_ ∗ _)%I  as "(? & ?)".
     (* we establish that the condition is true *)
-    wps_bind. wps_val.
-    wps_if. destruct (decide _) as [D|D]. 2:lia.
+    wps_bind. wps_call.
+    wps_if.
+    rewrite bool_decide_eq_false_2; last lia.
 
     (* loads v *)
     wps_bind.
@@ -102,7 +102,7 @@ Proof.
     rewrite !list_lookup_total_middle /= //. iClear select True%I.
 
     (* i+1 *)
-    wps_bind. wps_val.
+    wps_bind. wps_call.
 
     (* massaging to match the I.H. *)
     replace (length src1 + 1) with (length (src1 ++ [v])) by now rewrite app_length /=; lia.
@@ -199,13 +199,14 @@ Definition vector_push : val :=
   λ: [["p", "x"]],
     let: "cap" := "p".[0] in
     let: "size" := "p".[1] in
-    let: "diff" := "cap" '- "size" in
-    (if: "diff" then ()%V else
-       let: "newcap" := "cap" '* ^2 in
-      vector_resize [["p", "newcap"]]);;
+    let: "eq" := "cap" '== "size" in
+    (if: "eq" then
+       let: "newcap" := "cap" '* 2 in
+       vector_resize [["p", "newcap"]]
+     else ()%V );;
     let: "v" := "p".[2] in
     "v".["size"] <- "x";;
-    let: "size" := "size" '+ ^1 in
+    let: "size" := "size" '+ 1 in
     "p".[1] <- "size".
 
 Lemma vector_push_spec_no_resize `{!interpGS Σ} qz qp vs l v cap :
@@ -221,13 +222,13 @@ Proof.
   wps_call.
   wps_bind. wps_load; [ .. | iIntros "Sv"].
   wps_bind. wps_load; [ .. | iIntros "Sv"].
-  wps_bind. wps_val; [ .. | iIntros "Sv"].
-  wps_bind. wps_if. destruct (decide _) as [d|e]. 2:lia.
+  wps_bind. wps_call; [ .. | iIntros "Sv"].
+  wps_bind. wps_if. rewrite bool_decide_eq_false_2; last lia.
   wps_val. iIntros "Sv".
   wps_bind. wps_load; [ .. | iIntros "Sv"].
   wps_bind. unshelve wps_store; [ .. | ].
   now rewrite app_length replicate_length; lia.
-  wps_bind. wps_val; [ .. | ].
+  wps_bind. wps_call; [ .. | ].
   do 6 iStepS.
   iExists l'.
   rewrite app_length /=.
@@ -253,9 +254,9 @@ Proof.
   wps_call.
   wps_bind. wps_load; [ .. | iIntros "Sv"].
   wps_bind. wps_load; [ .. | iIntros "Sv"].
-  wps_bind. wps_val; [ .. | iIntros "Sv"].
-  wps_bind. wps_if. destruct (decide _) as [d|e]. lia.
-  wps_bind. wps_val.
+  wps_bind. wps_call; [ .. | iIntros "Sv"].
+  wps_bind. wps_if. rewrite bool_decide_eq_true_2 //.
+  wps_bind. wps_call.
   assert (length vs <= length vs * 2) as A by lia.
   wps_apply vector_resize_spec. eassumption. eassumption.
   rew_qz. iFrame.
@@ -267,7 +268,7 @@ Proof.
     wps_bind. wps_load. iIntros "?".
     wps_bind. unshelve wps_store.
     { rewrite app_length replicate_length. lia. }
-    wps_bind. wps_val.
+    wps_bind. wps_call.
     do 6 iStepS.
     iFrame select (♢_)%I.
     iExists l''.
@@ -363,7 +364,7 @@ Definition vector_pop : val :=
   λ: [["p"]],
     let: "v" := "p".[2] in
     let: "size" := "p".[1] in
-    let: "size" := "size" '- ^1 in
+    let: "size" := "size" '- 1 in
     let: "x" := "v".["size"] in
     "p".[1] <- "size";;
     "v".["size"] <- ();;
@@ -393,7 +394,7 @@ Proof.
   wps_call.
   wps_bind. wps_load.
   wps_bind. wps_load. iIntros "?".
-  wps_bind. wps_val. iIntros "?".
+  wps_bind. wps_call. iIntros "?".
   wps_bind. wps_store.
   rewrite !big_opL_snoc app_length /= Nat.add_sub.
   rewrite -app_assoc list_lookup_total_middle //.

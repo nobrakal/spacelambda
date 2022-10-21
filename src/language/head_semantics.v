@@ -9,25 +9,23 @@ Set Implicit Arguments.
 
 Definition exec_nat_bin_op op :=
   match op with
-  | OpAdd => Nat.add
-  | OpMul => Nat.mul
-  | OpSub => Nat.sub end.
+  | NatAdd => Nat.add
+  | NatMul => Nat.mul
+  | NatSub => Nat.sub end.
 
-Inductive prim_step : prim -> list val -> val -> Prop :=
-| PrimNatOp : forall p op vs n1 n2,
-    p = prim_nat_op op ->
-    vs = [val_nat n1; val_nat n2] ->
-    prim_step p vs (val_nat (exec_nat_bin_op op n1 n2))
-| PrimEqNat : forall p vs n1 n2,
-    p = prim_eq ->
-    vs = [val_nat n1; val_nat n2] ->
-    prim_step p vs (val_bool (bool_decide (n1=n2)))
-| PrimEqLoc : forall p vs l1 l2,
-    p = prim_eq ->
-    vs = [val_loc l1; val_loc l2] ->
-    prim_step p vs (val_bool (bool_decide (l1=l2)))
-.
-#[export] Hint Constructors prim_step : prim_step.
+Definition exec_bool_bin_op op :=
+  match op with
+  | BoolAnd => andb
+  | BoolOr => orb end.
+
+Definition eval_call_prim p vs :=
+  match p,vs with
+  | prim_bool_op1 BoolNeg, [val_bool b] => Some (val_bool (negb b))
+  | prim_bool_op2 op, [val_bool b1; val_bool b2] => Some (val_bool (exec_bool_bin_op op b1 b2))
+  | prim_nat_op op, [val_nat m; val_nat n] => Some (val_nat (exec_nat_bin_op op m n))
+  | prim_eq, [val_loc l1; val_loc l2] => Some (val_bool (bool_decide (l1=l2)))
+  | prim_eq, [val_nat m; val_nat n] => Some (val_bool (bool_decide (m=n)))
+  | _,_ => None end.
 
 (* A head step *)
 Inductive head_step : nat -> tm -> store -> tm -> store -> Prop :=
@@ -46,7 +44,7 @@ Inductive head_step : nat -> tm -> store -> tm -> store -> Prop :=
 | HeadCallPrim : forall s σ t1 p ts vs v,
     t1 = tm_val (val_prim p) ->
     ts = fmap tm_val vs ->
-    prim_step p vs v ->
+    eval_call_prim p vs = Some v ->
     head_step s
       (tm_call t1 ts) σ
       (tm_val v) σ
@@ -161,7 +159,7 @@ Qed.
 
 Lemma invert_head_step_call_prim s prim vs σ t' σ' :
   head_step s (tm_call (val_prim prim) (fmap tm_val vs)) σ t' σ' ->
-  σ = σ' ∧ exists v, t' = tm_val v /\ prim_step prim vs v.
+  σ = σ' ∧ exists v, t' = tm_val v /\ eval_call_prim prim vs = Some v.
 Proof.
   inversion_clear 1.
   inversion H0.

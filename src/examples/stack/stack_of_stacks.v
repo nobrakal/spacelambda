@@ -93,7 +93,7 @@ Definition stack_is_full : val :=
     let: "tail" := "stack".[1] in
     let: "fi" := C.stack_is_full [["front"]] in
     let: "ft" := P.stack_is_full [["tail"]] in
-    "fi" '* "ft". (* The stack is full iff its front & tail are full *)
+    "fi" '&& "ft". (* The stack is full iff its front & tail are full *)
 
 Lemma locs_stack_empty : locs stack_empty = ∅.
 Proof. easy. Qed.
@@ -168,7 +168,7 @@ Lemma stack_is_empty_spec `{interpGS Σ} A (R:A -> val -> iProp Σ) xs s :
   CODE (stack_is_empty [[s]])
   SOUV {[s]}
   PRE  (StackOf R xs s)
-  POST (fun n => ⌜n ≠ 0 <-> xs=nil⌝ ∗ StackOf R xs s).
+  POST (fun b => ⌜b=bool_decide (xs=nil)⌝ ∗ StackOf R xs s).
 Proof.
   iIntros "Hs".
   destruct_stack "Hs".
@@ -179,8 +179,9 @@ Proof.
   wps_apply C.stack_is_empty_spec as (n) "[%Hn ?] ?".
   iSplitR.
   { destruct Hinv as [? ? Ht]. iPureIntro. subst.
+    apply bool_decide_ext.
     split; intros He.
-    { apply Hn in He. rewrite He Ht //. }
+    { rewrite He Ht //. }
     { apply app_nil in He; destruct He. intuition. } }
   { iExists _,_,_,_. by iFrame. }
 Qed.
@@ -205,34 +206,28 @@ Proof.
   unfold IsFull. rewrite Hc. intros ? E. injection E. easy.
 Qed.
 
-Lemma mult_neq_zero (n m : nat) :
-  n * m ≠ 0 <-> n ≠ 0 /\ m ≠ 0.
-Proof. lia. Qed.
-
-Lemma stack_is_full_correct A nf nt (xs LF : list A) LT :
+Lemma stack_is_full_correct A (nf nt:bool) (xs LF : list A) LT :
   StackInv xs LF LT ->
-  nf ≠ 0 ↔ ¬ size_lt (length LF) C.capacity ->
-  nt ≠ 0 ↔ ¬ size_lt (length LT) P.capacity ->
-  nf * nt ≠ 0 ↔ ¬ size_lt (length xs) capacity.
+  nf ↔ ¬ size_lt (length LF) C.capacity ->
+  nt ↔ ¬ size_lt (length LT) P.capacity ->
+  Is_true (nf && nt) ↔ ¬ size_lt (length xs) capacity.
 Proof.
   intros [-> ? Hf Ht] Hnf Hnt.
   unfold size_lt in *.
   rewrite /capacity.
   destruct C.capacity eqn:Hc.
-  2:{ split; try easy. intros E.
-      apply mult_neq_zero in E. destruct E. now apply Hnf. }
+  2:{ naive_solver. }
   destruct P.capacity.
-  2:{ split; try easy. intros E.
-      apply mult_neq_zero in E. destruct E. now apply Hnt. }
+  2:{ naive_solver. }
   rewrite app_length. erewrite length_concat_full; eauto.
-  nia.
+  naive_solver nia.
 Qed.
 
 Lemma stack_is_full_spec `{interpGS Σ} A (R:A -> val -> iProp Σ) xs s :
   CODE (stack_is_full [[s]])
   SOUV {[s]}
   PRE (StackOf R xs s)
-  POST (fun n => ⌜n ≠ 0 <-> ¬ (size_lt (length xs) capacity)⌝ ∗ StackOf R xs s).
+  POST (fun (b:bool) => ⌜b <-> ¬ (size_lt (length xs) capacity)⌝ ∗ StackOf R xs s).
 Proof.
   iIntros "Hs".
   pose proof C.locs_stack_is_full.
@@ -247,7 +242,7 @@ Proof.
   wps_apply C.stack_is_full_spec as "(%Hnf & ?)".
   wps_bind.
   wps_apply DP.stack_is_full_spec_dominant as "(%Hnt & ?)".
-  wps_bin_op. iIntros.
+  wps_call. iIntros.
   iSplitR.
   { eauto using stack_is_full_correct. }
   iExists f,t,_,_. by iFrame.
@@ -340,11 +335,10 @@ Proof.
   wps_bind.
   wps_apply C.stack_is_full_spec as (n) "[%Hn Hf]". iIntros.
 
-  wps_if.
+  wps_if. destruct n.
 
-  case_decide as n_eq.
   (* The front is full, we need to push it. *)
-  { apply Hn in n_eq. clear Hn.
+  { assert ( ¬ size_lt (length LF) C.capacity) by (now apply Hn). clear Hn.
     unfold size_lt in *.
     destruct C.capacity as [c|] eqn:Hc; try easy.
     assert (length LF = Pos.to_nat c) as Hlf.
@@ -480,38 +474,34 @@ Proof.
   wps_apply C.stack_is_empty_spec as (n) "[%Hn Hf] ?".
 
   wps_bind.
-  wps_if.
-
-  case_decide as Hnz; last first.
+  wps_if. rewrite Hn.
+  destruct LF'; last first.
   (* The front chunk is not empty *)
   { do 6 iStepS. iIntros. iFrame.
     iExists _,_,_,_. iFrame.
     iPureIntro. subst.
     eapply StackInv_pop; eauto.
-    intros ->. exfalso. destruct Hn as (_&Hn). now apply Hn. }
+    intros ?. congruence. }
 
   (* The front chunk is now empty, we try to pop in the tail. *)
-  { assert (LF' = nil) by (now apply Hn). subst LF'. clear Hn Hnz n.
-    wps_bind. wps_load.
+  {  wps_bind. wps_load.
     wps_bind.
     wps_apply DP.stack_is_empty_spec_dominant as (nt) "[%Hnt ?]". iIntros.
 
-    wps_if.
-    case_decide as Hntz.
+    wps_if. rewrite Hnt.
+    destruct LT.
 
     (* The tail is empty, the whole stack is now empty. *)
     { do 6 iStepS. iIntros. iFrame.
       rewrite /cell_cost. iFrame.
       iExists f,t,_,_. iFrame.
-      iPureIntro.
-      eapply StackInv_pop; eauto.
-      intros. apply Hnt. eauto. }
+      eauto using StackInv_pop. }
 
     (* The tail is not empty, we pop a chunk ! *)
     { wps_bind.
       wps_context t.
       wps_apply DP.stack_pop_dominant_spec' as (vnf) "[%y [%ys [%Heys (Hpost & ? & ? & ? & ?)]]]".
-      { intros ->. destruct Hnt as (_&Hnt). now apply Hnt. }
+      { eauto. }
       iDestruct "Hpost" as "[%nf [%Enf ?]]". subst vnf. iIntros.
       rew_enc. wps_store. iIntros.
 

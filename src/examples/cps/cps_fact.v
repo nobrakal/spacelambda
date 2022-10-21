@@ -104,14 +104,15 @@ End Id.
 
 Definition fac_aux : val :=
   μ: "self", [["n", "cont"]],
-    if: "n"
-    then
+    let: "c" := "n" '== 0 in
+    if: "c"
+    then call_clo "cont" [[1]]
+    else
       let: "ncont" :=
         mk_clo BAnon [["r"]]%binder
           (let: "p" := "n" '* "r" in call_clo "cont" [["p"]]) in
       let: "m" := "n" '- 1 in
-      "self" [["m", "ncont"]]
-    else call_clo "cont" [[1]].
+      "self" [["m", "ncont"]].
 
 Definition fac : val :=
   λ: [["n"]],
@@ -145,7 +146,8 @@ Lemma fac_aux_spec Q (n:nat) (cont:loc) inv env :
 Proof.
   iStartProof.
   iRevert (cont inv env Q).
-  iInduction (n) as [] "IH"; iIntros (cont inv env Q) "(Hdiams & Hcont)"; wps_call; wps_if.
+  iInduction (n) as [] "IH"; iIntros (cont inv env Q) "(Hdiams & Hcont)"; wps_call; wps_bind_nofree;
+    wps_call; wps_if; simpl.
   { simplify_substs.
     iDestruct "Hcont" as "(? & ? & ?)".
     wps_call. iFrame. iIntros (?) "Hspec".
@@ -157,6 +159,7 @@ Proof.
 
   (* LATER *)
   wps_bind_empty idtac; try easy.
+  rewrite (subst_not_in "c"); last by vm_compute.
 
   mine 3.
   wps_nofree.
@@ -186,7 +189,7 @@ Proof.
 
   (* LATER *)
   iApply wps_let_nofree. simpl.
-  do 2 iStepS.
+  wps_call.
   replace (n-0) with n by lia. rewrite enc_loc.
   iApply wps_end. rew_enc. simpl.
 
