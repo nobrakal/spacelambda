@@ -39,7 +39,7 @@ Definition provision_step : Qz :=
 Definition spare_cost : Qz :=
   match C.capacity with
   | None => 0
-  | Some c => pos_to_Qp c end.
+  | Some c => C.empty_cost end.
 
 Definition empty_cost : Qz :=
   3 + C.empty_cost + P.empty_cost + spare_cost.
@@ -178,7 +178,7 @@ Definition StackOf `{!interpGS Σ} {A} (R:A -> val -> iProp Σ) (xs:list (A * (Q
       C.StackOf R LF f ∗
       (match C.capacity with
          None => True
-       | Some c => if (decide (f=g)) then ♢(Pos.to_nat c)
+       | Some c => if (decide (f=g)) then ♢C.empty_cost
                   else C.StackOf (fun x y => ⌜x=y⌝) (replicate (Pos.to_nat c) (val_unit,(1%Qz,1%Qp))) g ∗
                        Stackable g 1%Qp ∗ g ↤ {[+s+]}
        end) ∗
@@ -378,6 +378,7 @@ Proof.
   wps_if. destruct n.
 
   (* XXX Spare f g repr predicate. *)
+  (* XXX be careful with the indirection of the spare block. *)
 
   (* The front is full, we need to push it. *)
   { unfold size_lt in *.
@@ -388,14 +389,18 @@ Proof.
     rewrite Hlf potential_full //.
 
     wps_bind.
+
     iDestruct (diamonds_split with "[$]") as "[Hd1  Hd2]".
 
-    wps_bind. wps_load.
-    wps_bind_nofree.
-    wps_call. rew_enc. simpl.
-    wps_if. rewrite bool_decide_decide.
-    case_decide; subst.
-    { admit. }
+    iApply (@wps_mono _ _ _ _ _ _ (fun _ => emp)%I with "[H15 Hsp]").
+    { wps_bind_nofree. wps_load.
+      wps_bind_nofree. simpl.
+      wps_call. rew_enc. simpl.
+      wps_if. rewrite bool_decide_decide.
+      case_decide; subst.
+      { wps_bind. wps_apply (C.stack_empty_spec) as "(?&?&?)".
+        wps_bind_nofree. wps_store.
+      }
     wps_val.
     wps_bind.
     wps_apply (C.stack_empty_spec _ R) as (nf) "(? & ? & ? )".
