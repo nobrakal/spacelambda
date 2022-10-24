@@ -180,7 +180,7 @@ Definition StackOf `{!interpGS Σ} {A} (R:A -> val -> iProp Σ) (xs:list (A * (Q
       Stackable t 1%Qp ∗ t ↤ {[+ s +]} ∗
       C.StackOf R LF f ∗
       (match C.capacity with
-         None => f ↤{1/2} ∅
+         None => f ↤{1/2} ∅ ∗ ⌜LT = nil⌝
        | Some c => if (decide (f=g)) then ♢C.empty_cost ∗ f ↤{1/2} {[+s+]}
                   else Spare R s g ∗ f ↤{1/2} ∅
        end) ∗
@@ -539,70 +539,93 @@ Proof.
 
   wps_context v.
   wps_bind.
-  wps_context f.
   wps_apply C.stack_is_empty_spec as (n) "[%Hn Hf] ?".
 
-  wps_bind.
-  wps_if.
-
-  case_decide as Hnz; last first.
+  wps_bind. wps_if.
+  rewrite Hn. destruct LF'; simpl; last first.
   (* The front chunk is not empty *)
   { do 6 iStepS. iIntros. iFrame.
-    iExists _,_,_,_. iFrame.
+    iExists _,_,_,_,_. iFrame.
     iPureIntro. subst.
-    eapply StackInv_pop; eauto.
-    intros ->. exfalso. destruct Hn as (_&Hn). now apply Hn. }
+    eapply StackInv_pop; eauto. naive_solver. }
 
   (* The front chunk is now empty, we try to pop in the tail. *)
-  { assert (LF' = nil) by (now apply Hn). subst LF'. clear Hn Hnz n.
-    wps_bind. wps_load.
+  { wps_bind. wps_load. iIntros.
     wps_bind.
-    wps_apply DP.stack_is_empty_spec_dominant as (nt) "[%Hnt ?]". iIntros.
+    wps_apply DP.stack_is_empty_spec_dominant as (nt) "[%Hnt ?]".
+    iIntros "(?&?)". rewrite Hnt.
 
-    wps_if.
-    case_decide as Hntz.
-
+    wps_if. destruct LT; simpl.
     (* The tail is empty, the whole stack is now empty. *)
     { do 6 iStepS. iIntros. iFrame.
       rewrite /cell_cost. iFrame.
-      iExists f,t,_,_. iFrame.
-      iPureIntro.
-      eapply StackInv_pop; eauto.
-      intros. apply Hnt. eauto. }
+      iExists f,t,_,_,_. iFrame.
+      iPureIntro. eauto using StackInv_pop. }
 
     (* The tail is not empty, we pop a chunk ! *)
     { wps_bind.
       wps_context t.
       wps_apply DP.stack_pop_dominant_spec' as (vnf) "[%y [%ys [%Heys (Hpost & ? & ? & ? & ?)]]]".
-      { intros ->. destruct Hnt as (_&Hnt). now apply Hnt. }
-      iDestruct "Hpost" as "[%nf [%Enf ?]]". subst vnf. iIntros.
-      rew_enc. wps_store. iIntros.
+      { naive_solver. }
+      iDestruct "Hpost" as "[%nf [%Enf ?]]". subst vnf. iIntros "? Hsf".
+      rew_enc.
+      iApply wps_end.
+      wps_bind_nofree. wps_store.
+      wps_store. rew_enc.
 
-      rewrite left_id.
-      rewrite left_id. assert (({[-s-]} ⊎ {[+ s +]}) ≡ ∅) as -> by smultiset_solver.
+      (* TODO name *)
+      pose (E:=fun (_:val) => (♢ C.empty_cost ∗ Spare R s f ∗ nf ↤{1 / 2} ∅ ∗ ⌜C.capacity ≠ None⌝)%I).
 
-      iApply @wps_esupd.
-      { set_solver. }
-      { apply @C.stack_free. }
-      iFrame.
+      do 2 rewrite left_id.
 
-      iIntros "(Dof & ? & ?)".
-      do 6 iStepS. iIntros. iFrame.
-      iExists nf,t,_,_. iFrame.
-      do 2 iDestruct (diamonds_join with "[$]") as "?".
+      iAssert (⌜nf ≠ g⌝)%I as "%". admit.
+      iAssert (⌜nf ≠ f⌝)%I as "%". admit.
+      assert ({[-s-]} ⊎ {[+ s; s +]} ≡ {[+s+]}) as -> by smultiset_solver.
+      iDestruct (mapsfrom_split nf _ _ (1/2) (1/2) {[+s+]} ∅ with "[$]") as "(?&Hnf)".
+      1,2:naive_solver.
+      rewrite Qz_div_2 //.
+      smultiset_solver.
+
+      iApply (@wps_mono _ _ _ _ _ _ E with "[Hf H47 H46 Hnf Hsp Hsf]").
+      { unfold E.
+        destruct C.capacity.
+        2:{ iDestruct "Hsp" as "(?&%)". congruence. }
+        case_decide; subst.
+        { wps_val. iDestruct "Hsp" as "(?&?)". iFrame.
+          do 2 iDestruct (mapsfrom_join with "[$][$]") as "?".
+          admit. }
+        { iDestruct "Hsp" as "((?&?&?)&?)".
+          iApply @wps_esupd.
+          { set_solver. }
+          { apply (@C.stack_free _ _ _ R g). }
+          iFrame.
+          iDestruct (mapsfrom_join g with "[$] [$]") as "?".
+          rewrite right_id. rew_smset. iFrame.
+          iIntros "(?&_&_)". simpl. rewrite right_absorb right_id.
+          wps_val. iFrame.
+          iDestruct (mapsfrom_join f with "[$] [$]") as "?".
+          rewrite Qz_div_2 left_id. iFrame. eauto. } }
+
+      unfold E. iIntros (_) "(?&?&?&%)".
+      wps_val. iIntros. iFrame.
+
+      iExists nf,t,f,_,_. iFrame.
+      iDestruct (diamonds_join with "[$]") as "?".
       iSplitR.
       { subst. simpl in *. eauto using StackInv_pop'. }
-      { conclude_diamonds.
-        subst.
+      destruct C.capacity eqn:HC; last congruence.
+      rewrite decide_False //. iFrame.
 
-        rewrite potential_zero right_id right_absorb right_id.
+      conclude_diamonds.
+      subst.
+      rewrite potential_zero right_id.
 
-        apply Forall_cons in Hf.
-        destruct Hf as (Hy & _).
-        unfold IsFull in *.
-        destruct C.capacity eqn:E; simpl in *; try easy. injection Hy.
-        intros ->.
-        rewrite potential_full //. } } }
+      apply Forall_cons in Hf.
+      destruct Hf as (Hy & _).
+      unfold IsFull in *.
+      rewrite HC in Hy. injection Hy.
+      intros ->.
+      rewrite potential_full //. } }
 Qed.
 
 Lemma free_soup_children `{!interpGS Σ} A (R:A -> val -> iProp Σ) LT vs c :
