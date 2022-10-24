@@ -72,7 +72,7 @@ Definition stack_push : val :=
         let: "has_no_spare" := "front" '== "spare" in
         if: "has_no_spare" then
           let: "newfront" := C.stack_empty [] in
-          "spare".[2] <- "newfront";;
+          "stack".[2] <- "newfront";;
           "newfront"
         else
           "spare"
@@ -170,23 +170,47 @@ Record StackInv {A} (L LF:list A) (LS:list (list A)) : Prop :=
       match P.capacity with None => True | Some c => length LS <= Pos.to_nat c end
     }.
 
+Definition Spare `{!interpGS Σ} {A} (R:A -> val -> iProp Σ) s g : iProp Σ :=
+  C.StackOf R nil g ∗ Stackable g 1%Qp ∗ g ↤ {[+s+]}.
+
 Definition StackOf `{!interpGS Σ} {A} (R:A -> val -> iProp Σ) (xs:list (A * (Qz * Qp))) (s:loc) : iProp Σ :=
   ∃ (f t g:loc) (LF:list (A * (Qz * Qp))) (LT:list (list (A * (Qz * Qp)))),
     ⌜StackInv xs LF LT⌝ ∗ ♢ (potential (length LF)) ∗
-    s ↦ BBlock [val_loc f; val_loc t; val_loc g] ∗ Stackable f 1%Qp ∗ f ↤ {[+ s ; s +]} ∗
+    s ↦ BBlock [val_loc f; val_loc t; val_loc g] ∗ Stackable f 1%Qp ∗ f ↤{1/2} {[+ s +]} ∗
       Stackable t 1%Qp ∗ t ↤ {[+ s +]} ∗
       C.StackOf R LF f ∗
       (match C.capacity with
-         None => True
-       | Some c => if (decide (f=g)) then ♢C.empty_cost
-                  else C.StackOf (fun x y => ⌜x=y⌝) (replicate (Pos.to_nat c) (val_unit,(1%Qz,1%Qp))) g ∗
-                       Stackable g 1%Qp ∗ g ↤ {[+s+]}
+         None => f ↤{1/2} ∅
+       | Some c => if (decide (f=g)) then ♢C.empty_cost ∗ f ↤{1/2} {[+s+]}
+                  else Spare R s g ∗ f ↤{1/2} ∅
        end) ∗
       DP.StackDominantOf (fun xs => post (C.StackOf R xs)) 1%Qp LT t.
 
 Ltac destruct_stack Hs :=
   iDestruct Hs as
-    "[%f [%t [%g [%LF [%LT (%Hinv & Hdiams & ? & ? & ? & ? & ? & Hf & Hsp & Ht)]]]]]".
+    "[%f [%t [%g [%LF [%LT (%Hinv & Hdiams & ? & ? & Hfront & ? & ? & Hf & Hsp & Ht)]]]]]".
+
+
+Lemma length_concat A c (xs:list (list A)):
+  Forall (fun x => length x = c) xs ->
+  length (concat xs) = c * length xs.
+Proof.
+  induction xs; simpl; try lia.
+  intros E. apply Forall_cons_1 in E. destruct E.
+  rewrite app_length IHxs //. lia.
+Qed.
+
+Lemma length_concat_full A c (xs:list (list A)):
+  C.capacity = Some c ->
+  Forall IsFull xs ->
+  length (concat xs) = (Pos.to_nat c * length xs).
+Proof.
+  intros Hc ?.
+  eapply length_concat; eauto.
+  eapply Forall_impl; eauto.
+  unfold IsFull. rewrite Hc. intros ? E. injection E. easy.
+Qed.
+
 
 (*
 Lemma stack_is_empty_spec `{interpGS Σ} A (R:A -> val -> iProp Σ) xs s :
@@ -208,26 +232,6 @@ Proof.
     { apply Hn in He. rewrite He Ht //. }
     { apply app_nil in He; destruct He. intuition. } }
   { iExists _,_,_,_,_. by iFrame. }
-Qed.
-
-Lemma length_concat A c (xs:list (list A)):
-  Forall (fun x => length x = c) xs ->
-  length (concat xs) = c * length xs.
-Proof.
-  induction xs; simpl; try lia.
-  intros E. apply Forall_cons_1 in E. destruct E.
-  rewrite app_length IHxs //. lia.
-Qed.
-
-Lemma length_concat_full A c (xs:list (list A)):
-  C.capacity = Some c ->
-  Forall IsFull xs ->
-  length (concat xs) = (Pos.to_nat c * length xs).
-Proof.
-  intros Hc ?.
-  eapply length_concat; eauto.
-  eapply Forall_impl; eauto.
-  unfold IsFull. rewrite Hc. intros ? E. injection E. easy.
 Qed.
 
 Lemma mult_neq_zero (n m : nat) :
@@ -392,23 +396,29 @@ Proof.
 
     iDestruct (diamonds_split with "[$]") as "[Hd1  Hd2]".
 
-    iApply (@wps_mono _ _ _ _ _ _ (fun _ => emp)%I with "[H15 Hsp]").
+    iApply (@wps_mono_val _ _ _ _ _ _ (fun sp => s ↦ BBlock [val_loc f; val_loc t; val_loc sp]%V ∗ Spare R s sp ∗ f ↤{1 / 2} ∅)%I with "[H15 Hsp]").
     { wps_bind_nofree. wps_load.
       wps_bind_nofree. simpl.
       wps_call. rew_enc. simpl.
       wps_if. rewrite bool_decide_decide.
       case_decide; subst.
-      { wps_bind. wps_apply (C.stack_empty_spec) as "(?&?&?)".
+      { iDestruct "Hsp" as "(?&?)".
+        wps_bind. wps_apply (C.stack_empty_spec) as "(?&?&?)".
         wps_bind_nofree. wps_store.
-      }
-    wps_val.
-    wps_bind.
-    wps_apply (C.stack_empty_spec _ R) as (nf) "(? & ? & ? )".
-    iIntros.
-    wps_context nf.
-    wps_bind.
+        rewrite left_id_L.
+        rew_smset.
+        rewrite left_id.
+        wps_val. iFrame. }
+      { iDestruct "Hsp" as "(?&?)".
+        wps_val. iFrame. } }
+    iIntros (sp) "(?&?&?) ? ?".
+    iDestruct (mapsfrom_join with "[$] [$]") as "?".
+    rewrite Qz_div_2 left_id.
+
+    wps_bind_nofree.
     wps_store. iIntros.
-    wps_bind. wps_load. simpl. iIntros "Hcf ?".
+    wps_bind_nofree.
+    wps_load. simpl. iIntros.
     wps_bind.
 
     assert (size_lt (length LT) P.capacity).
@@ -419,26 +429,29 @@ Proof.
       rewrite app_length (length_concat_full _ c) // in Hiu.
       nia. }
 
-    rewrite left_id. assert ({[-s-]} ⊎ {[+ s +]} ≡ ∅) as -> by smultiset_solver.
-
+    rew_smset.
     wps_context t.
     wps_apply DP.stack_push_dominant_spec; eauto.
     rewrite post_loc. iFrame. iIntros.
 
     rewrite /cell_cost.
     iDestruct (diamonds_split with "[$]") as "(? & ?)".
-
+    wps_context sp.
     wps_apply C.stack_push_spec.
     { unfold size_lt. rewrite Hc. simpl in *. lia. }
     { eauto. }
-
     iIntros.
-    iExists _,_,_,_. iFrame.
+    iExists _,_,_,_,_. iFrame.
     iSplitR.
     { iPureIntro. apply StackInv_push'; try easy. unfold IsFull.
       rewrite Hc Hlf. easy. }
+    iSplitR "H35 Hd1".
     { rewrite /potential Qz_mul_1_l.
-      conclude_diamonds. } }
+      conclude_diamonds. }
+    rewrite Hc. rewrite decide_True //. iFrame.
+    iApply mapsfrom_split; eauto.
+    1,2:smultiset_solver.
+    rewrite Qz_div_2. iFrame. }
   { rewrite /cell_cost.
     iDestruct (diamonds_split with "[$]") as "(? & ?)".
 
@@ -450,7 +463,7 @@ Proof.
     wps_apply C.stack_push_spec; try easy.
     iIntros.
 
-    iExists _,_,_,_. iFrame.
+    iExists _,_,_,_,_. iFrame.
     iSplitR.
     { eauto using StackInv_push. }
     { conclude_diamonds. apply potential_step. } }
