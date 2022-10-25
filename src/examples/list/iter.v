@@ -234,13 +234,12 @@ Proof.
     iApply (wps_confront_Stackable l with "[$]").
     iIntros "%Hl ?".
     iDestruct (vmapsfrom_correct with "[$]") as "%Hy".
-    iApply (wps_confront_vmapsfrom l with "[$]").
+    iDestruct (vmapsfrom_confront l with "[$]") as "%Hd".
     { intros. destruct y; try easy.
       assert (qp ≠ 0)%Qz.
       { intros ?. destruct Hy; try easy. smultiset_solver. }
       rewrite (comm Qz_add).
       rewrite comm. apply Qz_lt_add_l. easy. }
-    iIntros "(? & ? & %Hd)".
     wps_free l.
     { destruct y; set_solver. }
 
