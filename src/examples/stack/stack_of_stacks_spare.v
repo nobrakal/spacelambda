@@ -685,9 +685,23 @@ Proof.
   iMod (@logical_free _ _ _ _ s with "[$] [$]") as "(? & Dblock & #Hs)"; try easy.
 
   iMod (mapsfrom_cleanup _ f with "[$] [$]") as "(? & ?)".
-  iMod (mapsfrom_cleanup _ t with "[$] [$]") as "(? & ?)".
+  iMod (mapsfrom_cleanup _ t with "[$] [$]") as "(Hi & ?)".
   assert (({[+ s +]} ⊎ {[-s-]}) ≡ ∅) as -> by smultiset_solver.
 
+  iAssert (|==> ♢spare_cost ∗ f ↤{1/2} ∅ ∗  wp.interp true maxsize k σ ∅)%I with "[Hi Hsp]" as ">(Hspare&?&?)".
+  { rewrite /spare_cost. destruct C.capacity.
+    { case_decide; subst; iDestruct "Hsp" as "(HS&?)".
+      { iMod (mapsfrom_cleanup with "[$] [$]") as "(?&?)". rew_smset. by iFrame. }
+      { iDestruct "HS" as "(?&?&?)".
+        iMod (mapsfrom_cleanup _ g with "[$] [$]") as "(?&?)". rew_smset.
+        iMod (C.stack_free _ R with "[$] [$]") as "(? & Df & #Hf & _ )"; try easy.
+        simpl. rewrite right_absorb right_id. by iFrame. } }
+    { iDestruct "Hsp" as "(?&?)".
+      iMod (mapsfrom_cleanup with "[$] [$]") as "(?&?)". rew_smset.
+      iMod diamonds_zero. by iFrame. } }
+
+  iDestruct (mapsfrom_join with "[$] [$]") as  "?".
+  rewrite Qz_div_2 left_id.
   iMod (C.stack_free _ R f with "[$] [$]") as "(? & Df & #Hf & ? )"; try easy.
   iMod (DP.stack_dominant_free _ _ 1%Qp LT t  with "[$] [$]") as "(? & Dt & #Ht & [%vc Hchildren] )"; try easy.
 
@@ -696,7 +710,7 @@ Proof.
   destruct C.capacity as [c|] eqn:Hc.
   { iMod (free_soup_children with "[$] [$]") as "(? & Dc & ?)". 1,2:(destruct Hinv; now eauto).
     iFrame. iModIntro.
-    iSplitL "Hdiams Dblock Df Dt Dc"; last first.
+    iSplitL "Hspare Hdiams Dblock Df Dt Dc"; last first.
     { destruct Hinv as [-> _ _ _ _]. iApply soup_app_exists. iFrame. }
     rewrite /empty_cost.
     do 2 iDestruct (diamonds_split with "[$]") as "[? ?]".
