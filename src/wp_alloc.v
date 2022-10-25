@@ -133,7 +133,7 @@ Proof.
     iAssert (interpret []) as "?".
     { by rewrite interpret_nil. }
 
-    iMod (ph_alloc with "[$]") as "[? [? ?]]"; last iFrame.
+    iMod (ph_alloc with "[$]") as "(?&?&?&_)"; last iFrame.
     1,2:easy.
     { simpl. rewrite block_pointer_set_new_block. easy. }
 

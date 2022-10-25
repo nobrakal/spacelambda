@@ -456,18 +456,6 @@ Qed.
 (* ------------------------------------------------------------------------ *)
 (* We lift some lemmas from ph *)
 
-Lemma mapsfrom_confront b l1 q1 ls1 l2 q2 ls2 L :
-  (1 < q1 + q2)%Qz ->
-  l1 ↤{q1} ls1 ∗ l2 ↤{q2} ls2 =[b | L]=∗
-  l1 ↤{q1} ls1 ∗ l2 ↤{q2} ls2 ∗ ⌜l1 ≠ l2⌝.
-Proof.
-  iIntros (?) "[H1 H2]". iIntros (? ? ?) "Hi".
-  destruct_interp "Hi".
-  iDestruct (ph_mapsfrom_confront with "[$] H1 H2") as "%E".
-  easy.
-  iFrame. iSplitL; try easy. iExists _. now iFrame.
-Qed.
-
 Lemma mapsfrom_cleanup b l l' q ls L:
   l ↤{q} ls ∗ †l' =[b | L]=∗
   l ↤{q} (ls ⊎ {[-l'-]}).

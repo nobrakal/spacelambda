@@ -92,9 +92,9 @@ Section NFrac.
   Qed.
 
   Local Instance nfrac_validN_instance : ValidN (nfrac A negligible) :=
-    λ n x, ✓{ n } (supp x).
+    λ n x, ✓{ n } (frac x) /\ ✓{ n } (supp x).
   Local Instance nfrac_valid_instance : Valid (nfrac A negligible) :=
-    λ x, ✓ (supp x).
+    λ x, ✓(frac x) /\  ✓ (supp x).
 
   Local Instance nfrac_op_instance : Op (nfrac A negligible) := nfrac_op.
   Local Instance nfrac_pcore_instance : PCore (nfrac A negligible) :=
@@ -108,7 +108,7 @@ Section NFrac.
     { rewrite E12 E22 //. }
   Qed.
 
-  Lemma nfrac_valid_alt X : ✓ X = ✓ (supp X).
+  Lemma nfrac_valid_alt X : ✓ X <-> ✓(frac X) /\ ✓ (supp X).
   Proof. easy. Qed.
 
   Lemma nfrac_op_alt x y : (x ⋅ y) = nfrac_op x y.
@@ -126,13 +126,16 @@ Section NFrac.
   Lemma nfrac_ra_mixin : RAMixin (nfrac A negligible).
   Proof.
     apply ra_total_mixin; eauto; try apply _; try easy.
-    { intros [] [] [? Hs]. do 2 rewrite nfrac_valid_alt.
-      simpl in *. by rewrite Hs. }
+    { intros [] [] [Hs1 Hs2]. do 2 rewrite nfrac_valid_alt.
+      simpl in *. by rewrite Hs1 Hs2. }
     { apply core_ok. }
     { intros. rewrite nfrac_core_alt. exists ε.
       by rewrite core_ok. }
     { intros [] []. do 2 rewrite nfrac_valid_alt. simpl.
-      apply cmra_valid_op_l. }
+      rewrite -gfrac_op.
+      intros (E1 & E2); split.
+      - now apply cmra_valid_op_l in E1.
+      - now apply cmra_valid_op_l in E2. }
   Qed.
 
   Canonical Structure nfracR :=
@@ -145,7 +148,8 @@ Section NFrac.
   Proof.
     split; try apply _; try done.
     unfold ε, nfrac_unit_instance.
-    rewrite nfrac_valid_alt. apply ucmra_unit_valid.
+    rewrite nfrac_valid_alt. split; try apply ucmra_unit_valid.
+    easy.
   Qed.
 
   Canonical Structure nfracUR : ucmra := Ucmra (nfrac A negligible) nfrac_ucmra_mixin.

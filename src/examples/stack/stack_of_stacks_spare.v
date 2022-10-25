@@ -48,37 +48,37 @@ Definition cell_cost : Qz :=
 
 (* Then the code itself. *)
 
-(* XXX
-Definition front := 0
- *)
+Definition front : val := val_nat 0.
+Definition tail  : val := val_nat 1.
+Definition spare : val := val_nat 2.
 
 Definition stack_empty : val :=
   λ: [[]],
     let: "stack" := alloc ^3 in
     let: "front" := C.stack_empty [] in
     let: "tail"  := P.stack_empty [] in
-    "stack".[0] <- "front";;
-    "stack".[1] <- "tail";;
-    "stack".[2] <- "front";;
+    "stack".[front] <- "front";;
+    "stack".[tail] <- "tail";;
+    "stack".[spare] <- "front";;
     "stack".
 
 Definition stack_push : val :=
   λ: [["v","stack"]],
-    let: "front" := "stack".[0] in
+    let: "front" := "stack".[front] in
     let: "is_full" := C.stack_is_full [["front"]] in
     if: "is_full" then
       let: "newfront" :=
-        let: "spare" := "stack".[2] in
+        let: "spare" := "stack".[spare] in
         let: "has_no_spare" := "front" '== "spare" in
         if: "has_no_spare" then
           let: "newfront" := C.stack_empty [] in
-          "stack".[2] <- "newfront";;
+          "stack".[spare] <- "newfront";;
           "newfront"
         else
           "spare"
       in
-      "stack".[0] <- "newfront";;
-      let: "tail" := "stack".[1] in
+      "stack".[front] <- "newfront";;
+      let: "tail" := "stack".[tail] in
       P.stack_push [["front", "tail"]];;
       C.stack_push [["v", "newfront"]]
     else
@@ -86,7 +86,7 @@ Definition stack_push : val :=
 
 Definition stack_pop : val :=
   λ: [["stack"]],
-    let: "front" := "stack".[0] in
+    let: "front" := "stack".[front] in
     let: "x" := C.stack_pop [["front"]] in
     let: "front_is_empty" := C.stack_is_empty [["front"]] in
     let: BAnon :=
@@ -95,23 +95,23 @@ Definition stack_pop : val :=
         let: "tail_is_empty" := P.stack_is_empty [["tail"]] in
         if: "tail_is_empty" then val_unit else
           let: "newfront" := P.stack_pop [["tail"]] in
-          "stack".[2] <- "front";;
-          "stack".[0] <- "newfront"
+          "stack".[spare] <- "front";;
+          "stack".[front] <- "newfront"
       else val_unit in
     "x".
 
 Definition stack_is_empty : val :=
   λ: [["stack"]],
-    let: "front" := "stack".[0] in
+    let: "front" := "stack".[front] in
     C.stack_is_empty [["front"]].
 
 Definition stack_is_full : val :=
   λ: [["stack"]],
-    let: "front" := "stack".[0] in
-    let: "tail" := "stack".[1] in
+    let: "front" := "stack".[front] in
+    let: "tail" := "stack".[tail] in
     let: "fi" := C.stack_is_full [["front"]] in
     let: "ft" := P.stack_is_full [["tail"]] in
-    "fi" '* "ft". (* The stack is full iff its front & tail are full *)
+    "fi" '&& "ft". (* The stack is full iff its front & tail are full *)
 
 Lemma locs_stack_empty : locs stack_empty = ∅.
 Proof. easy. Qed.
@@ -180,7 +180,7 @@ Definition StackOf `{!interpGS Σ} {A} (R:A -> val -> iProp Σ) (xs:list (A * (Q
       Stackable t 1%Qp ∗ t ↤ {[+ s +]} ∗
       C.StackOf R LF f ∗
       (match C.capacity with
-         None => f ↤{1/2} ∅ ∗ ⌜LT = nil⌝
+         None => f ↤{1/2} {[+s+]} ∗ ⌜LT = nil⌝
        | Some c => if (decide (f=g)) then ♢C.empty_cost ∗ f ↤{1/2} {[+s+]}
                   else Spare R s g ∗ f ↤{1/2} ∅
        end) ∗
@@ -189,7 +189,6 @@ Definition StackOf `{!interpGS Σ} {A} (R:A -> val -> iProp Σ) (xs:list (A * (Q
 Ltac destruct_stack Hs :=
   iDestruct Hs as
     "[%f [%t [%g [%LF [%LT (%Hinv & Hdiams & ? & ? & Hfront & ? & ? & Hf & Hsp & Ht)]]]]]".
-
 
 Lemma length_concat A c (xs:list (list A)):
   Forall (fun x => length x = c) xs ->
@@ -211,13 +210,11 @@ Proof.
   unfold IsFull. rewrite Hc. intros ? E. injection E. easy.
 Qed.
 
-
-(*
 Lemma stack_is_empty_spec `{interpGS Σ} A (R:A -> val -> iProp Σ) xs s :
   CODE (stack_is_empty [[s]])
   SOUV {[s]}
   PRE  (StackOf R xs s)
-  POST (fun n => ⌜n ≠ 0 <-> xs=nil⌝ ∗ StackOf R xs s).
+  POST (fun b => ⌜b=bool_decide (xs=nil)⌝ ∗ StackOf R xs s).
 Proof.
   iIntros "Hs".
   destruct_stack "Hs".
@@ -228,40 +225,34 @@ Proof.
   wps_apply C.stack_is_empty_spec as (n) "[%Hn ?] ?".
   iSplitR.
   { destruct Hinv as [? ? Ht]. iPureIntro. subst.
-    split; intros He.
-    { apply Hn in He. rewrite He Ht //. }
-    { apply app_nil in He; destruct He. intuition. } }
+    destruct LF.
+    { rewrite Ht //. }
+    { easy. } }
   { iExists _,_,_,_,_. by iFrame. }
 Qed.
 
-Lemma mult_neq_zero (n m : nat) :
-  n * m ≠ 0 <-> n ≠ 0 /\ m ≠ 0.
-Proof. lia. Qed.
-
 Lemma stack_is_full_correct A nf nt (xs LF : list A) LT :
   StackInv xs LF LT ->
-  nf ≠ 0 ↔ ¬ size_lt (length LF) C.capacity ->
-  nt ≠ 0 ↔ ¬ size_lt (length LT) P.capacity ->
-  nf * nt ≠ 0 ↔ ¬ size_lt (length xs) capacity.
+  Is_true nf ↔ ¬ size_lt (length LF) C.capacity ->
+  Is_true nt ↔ ¬ size_lt (length LT) P.capacity ->
+  Is_true (andb nf nt) ↔ ¬ size_lt (length xs) capacity.
 Proof.
   intros [-> ? Hf Ht] Hnf Hnt.
   unfold size_lt in *.
   rewrite /capacity.
   destruct C.capacity eqn:Hc.
-  2:{ split; try easy. intros E.
-      apply mult_neq_zero in E. destruct E. now apply Hnf. }
+  2:{ naive_solver. }
   destruct P.capacity.
-  2:{ split; try easy. intros E.
-      apply mult_neq_zero in E. destruct E. now apply Hnt. }
+  2:{ naive_solver. }
   rewrite app_length. erewrite length_concat_full; eauto.
-  nia.
+  naive_solver nia.
 Qed.
 
 Lemma stack_is_full_spec `{interpGS Σ} A (R:A -> val -> iProp Σ) xs s :
   CODE (stack_is_full [[s]])
   SOUV {[s]}
   PRE (StackOf R xs s)
-  POST (fun n => ⌜n ≠ 0 <-> ¬ (size_lt (length xs) capacity)⌝ ∗ StackOf R xs s).
+  POST (fun b => ⌜Is_true b <-> ¬ (size_lt (length xs) capacity)⌝ ∗ StackOf R xs s).
 Proof.
   iIntros "Hs".
   pose proof C.locs_stack_is_full.
@@ -276,12 +267,11 @@ Proof.
   wps_apply C.stack_is_full_spec as "(%Hnf & ?)".
   wps_bind.
   wps_apply DP.stack_is_full_spec_dominant as "(%Hnt & ?)".
-  do 3 iStepS. iIntros.
+  wps_call. iIntros.
   iSplitR.
   { eauto using stack_is_full_correct. }
   iExists f,t,g,_,_. by iFrame.
 Qed.
-*)
 
 Lemma StackInv_empty A :
   @StackInv A nil nil nil.
@@ -292,7 +282,6 @@ Proof.
   destruct P.capacity; simpl in *; lia.
 Qed.
 
-(*
 Lemma stack_empty_spec `{!interpGS Σ} A (R:A -> val -> iProp Σ) :
   CODE (stack_empty [[]])
   PRE  (♢ empty_cost)
@@ -304,12 +293,12 @@ Proof.
   wps_call.
   wps_bind.
   wps_alloc s as "(? & ? & ? & ?)".
-  { rewrite -assoc. admit. }
+  { repeat rewrite -assoc. apply Qz_le_add_l. }
   wps_context s.
   wps_bind.
 
   assert ((3 + C.empty_cost + P.empty_cost + spare_cost - 3)%Qz = (C.empty_cost + P.empty_cost + spare_cost)%Qz ) as ->.
-  { admit. }
+  { rewrite -!assoc Qz_add_sub //. }
   iDestruct (diamonds_split with "[$]") as "(Hdc & Hdp)".
   iDestruct (diamonds_split with "[$]") as "(?&?)".
   wps_apply (C.stack_empty_spec _ R) as (c) "(? & ? & ?)".
@@ -331,9 +320,12 @@ Proof.
   rewrite potential_zero. iFrame.
   iSplitR. eauto using StackInv_empty.
   rewrite /spare_cost.
-  destruct C.capacity. rewrite decide_True.
-Admitted.
- *)
+  rewrite decide_True //.
+  iAssert (c ↤{1 / 2} {[+ s +]} ∗c ↤{1 / 2} {[+ s +]})%I with "[H30]" as "(?&?)".
+  { iApply (mapsfrom_split with "[$]"). all:try naive_solver. compute_done. }
+  iFrame.
+  destruct C.capacity; by iFrame.
+Qed.
 
 Lemma StackInv_push A x (xs LF:list A) LT :
   size_lt (length LF) C.capacity ->
@@ -380,9 +372,6 @@ Proof.
   wps_apply C.stack_is_full_spec as (n) "[%Hn Hf]". iIntros.
 
   wps_if. destruct n.
-
-  (* XXX Spare f g repr predicate. *)
-  (* XXX be careful with the indirection of the spare block. *)
 
   (* The front is full, we need to push it. *)
   { unfold size_lt in *.
@@ -573,27 +562,32 @@ Proof.
       wps_bind_nofree. wps_store.
       wps_store. rew_enc.
 
+      destruct C.capacity eqn:HC; last first.
+      { iDestruct "Hsp" as "(?&%)". congruence. }
+
       (* TODO name *)
-      pose (E:=fun (_:val) => (♢ C.empty_cost ∗ Spare R s f ∗ nf ↤{1 / 2} ∅ ∗ ⌜C.capacity ≠ None⌝)%I).
+      pose (E:=fun (_:val) => (♢ C.empty_cost ∗ Spare R s f ∗ nf ↤{1 / 2} ∅)%I).
 
       do 2 rewrite left_id.
 
-      iAssert (⌜nf ≠ g⌝)%I as "%". admit.
-      iAssert (⌜nf ≠ f⌝)%I as "%". admit.
+      iDestruct (@mapsfrom_confront _ _ _ _ _ _ nf _ _ f with "[$] [$]") as "%".
+      { rew_qz. apply Qz_lt_add_l. compute_done. }
       assert ({[-s-]} ⊎ {[+ s; s +]} ≡ {[+s+]}) as -> by smultiset_solver.
       iDestruct (mapsfrom_split nf _ _ (1/2) (1/2) {[+s+]} ∅ with "[$]") as "(?&Hnf)".
       1,2:naive_solver.
-      rewrite Qz_div_2 //.
+      compute_done.
       smultiset_solver.
 
       iApply (@wps_mono _ _ _ _ _ _ E with "[Hf H47 H46 Hnf Hsp Hsf]").
       { unfold E.
-        destruct C.capacity.
-        2:{ iDestruct "Hsp" as "(?&%)". congruence. }
         case_decide; subst.
         { wps_val. iDestruct "Hsp" as "(?&?)". iFrame.
           do 2 iDestruct (mapsfrom_join with "[$][$]") as "?".
-          admit. }
+
+          replace (1 / 2 + 1 / 2 + 0)%Qz with 1%Qz.
+          2:{ compute_done. }
+          assert (({[+ s; s +]} ⊎ {[-s-]}) ≡ {[+s+]}) as -> by smultiset_solver.
+          iFrame. }
         { iDestruct "Hsp" as "((?&?&?)&?)".
           iApply @wps_esupd.
           { set_solver. }
@@ -604,17 +598,16 @@ Proof.
           iIntros "(?&_&_)". simpl. rewrite right_absorb right_id.
           wps_val. iFrame.
           iDestruct (mapsfrom_join f with "[$] [$]") as "?".
-          rewrite Qz_div_2 left_id. iFrame. eauto. } }
+          rewrite Qz_div_2 left_id. iFrame. } }
 
-      unfold E. iIntros (_) "(?&?&?&%)".
+      unfold E. iIntros (_) "(?&?&?)".
       wps_val. iIntros. iFrame.
 
       iExists nf,t,f,_,_. iFrame.
       iDestruct (diamonds_join with "[$]") as "?".
       iSplitR.
       { subst. simpl in *. eauto using StackInv_pop'. }
-      destruct C.capacity eqn:HC; last congruence.
-      rewrite decide_False //. iFrame.
+      rewrite HC decide_False //. iFrame.
 
       conclude_diamonds.
       subst.

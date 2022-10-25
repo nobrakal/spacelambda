@@ -614,34 +614,16 @@ Qed.
 (* ------------------------------------------------------------------------ *)
 (* More lemmas on mapsfrom *)
 
-Lemma ph_mapsfrom_confront l1 q1 ls1 l2 q2 ls2 σ :
-  (1 < q1 + q2)%Qz ->
-  ph_interp σ -∗ l1 ↤{q1} ls1 -∗ l2 ↤{q2} ls2 -∗ ⌜l1 ≠ l2⌝.
+Lemma mapsfrom_confront l1 q1 ls1 l2 q2 ls2 :
+  (1 < q1 + q2)%Qz -> l1 ↤{q1} ls1 -∗ l2 ↤{q2} ls2 -∗ ⌜l1 ≠ l2⌝.
 Proof.
-  iIntros (H12) "[_ [%π [Hπ %Hinv]]] H1 H2".
-  destruct (decide (l1=l2)); subst; try easy.
-  assert (dom π ⊆ dom σ) by (eauto using invariant_dom).
-  iDestruct (mapsfrom_join with "H1 [$]") as "H".
-  iDestruct (exploit_mapsfrom_dom with "[$] [$]") as "%Hπ".
-  { intros Hq. rewrite Hq in H12. apply Qz_lt_zero in H12. easy. }
-  { easy. }
-  iDestruct "H" as "[%a H]".
-  iDestruct "Hπ" as "[%μ [%Htied Hμ]]".
-  destruct Htied as [Hd Hn _].
-  iDestruct (own_valid_2 with "Hμ [$]") as "%Hv".
-  iPureIntro. exfalso. apply auth_both_valid_discrete in Hv.
-  destruct Hv as (Hv&_).
-  rewrite lookup_included in Hv.
-  specialize (Hv l2).
-  rewrite lookup_op lookup_singleton lookup_fmap in Hv.
-  destruct (π !! l2) eqn:E; [|rewrite -not_elem_of_dom in E; easy].
-  destruct (μ !! l2) as [n|] eqn:E'; [|rewrite -not_elem_of_dom Hd in E'; set_solver].
-  rewrite E' in Hv. simpl in Hv. rewrite -Some_op in Hv.
-  rewrite Some_included_total in Hv.
-  apply nfrac_frac_le in Hv. simpl in Hv.
-  assert (frac n = 0%Qz) as fn by (now specialize (Hn _ _ E')).
-  rewrite fn right_id_L in Hv.
-  rewrite Qz_lt_nge in H12. easy.
+  iIntros (Hlt) "[% ?] [% ?]". rewrite Qz_lt_nge in Hlt.
+  iDestruct (own_valid_2 with "[$] [$]") as "%Hv".
+  iPureIntro. intros ?. apply Hlt. subst.
+  rewrite -auth_frag_op auth_frag_valid singleton_op singleton_valid in Hv.
+  destruct Hv as (Hv & ?). simpl in *.
+  rewrite gfrac_valid in Hv.
+  rewrite comm_L. easy.
 Qed.
 
 (* ------------------------------------------------------------------------ *)
@@ -655,9 +637,15 @@ Lemma alloc_fracset_local_update π μ l fs :
 Proof.
   intros ? Hfs.
   apply local_update_unital_discrete.
-  intros z _ Hz.
+  intros z Hv Hz.
   split.
-  { now apply prove_gmap_valid. }
+  { apply prove_gmap_valid. intros ? ?.
+    rewrite lookup_union_with lookup_fmap.
+    destruct (decide (l=i)); subst.
+    { rewrite !lookup_insert. simpl. injection 1. intros <-. easy. }
+    { specialize (Hv i). rewrite !lookup_insert_ne //.
+      rewrite !lookup_insert_ne // lookup_op lookup_fmap in Hv.
+      intros Eq. rewrite -Some_valid -Eq. easy. } }
   rewrite left_id in Hz.
   rewrite -Hz left_id.
   intros x.
@@ -712,9 +700,15 @@ Lemma dealloc_fracset_update π μ l fs gs (ns:fracset L) :
 Proof.
   intros Hμ Hffs Hns Hπl ?.
   apply local_update_unital_discrete.
-  intros z _ Hz.
+  intros z Hv Hz.
   split.
-  { now apply prove_gmap_valid. }
+  { apply prove_gmap_valid. intros ? ?.
+    rewrite lookup_op lookup_fmap.
+    destruct (decide (l=i)); subst.
+    { rewrite lookup_delete lookup_insert. injection 1. intros <-. easy. }
+    { rewrite lookup_delete_ne // lookup_insert_ne //.
+      intros Hv'. rewrite -Some_valid -Hv'.
+      specialize (Hv i). rewrite lookup_op lookup_fmap // in Hv. } }
   intros x.
   specialize (Hz x).
   do 2 rewrite lookup_op in Hz. rewrite lookup_fmap in Hz.
@@ -864,7 +858,7 @@ Proof.
     eapply singleton_local_update.
     { rewrite lookup_merge lookup_fmap Hπl' Hns. simpl. rewrite -Some_op //. }
     { apply local_update_unital_discrete.
-      intros z _ Hz.
+      intros z Hv Hz.
       split; try easy.
       inversion_clear Hz as [? ?]. constructor; try easy. simpl in *.
       smultiset_solver. } }
@@ -878,21 +872,20 @@ Lemma fracset_local_alloc_unit l μ :
 Proof.
   intros ?.
   apply local_update_unital_discrete.
-  intros z _ Hz.
+  intros z Hv Hz.
   split; try easy.
-  { now apply prove_gmap_valid. }
-  { intros x. rewrite left_id in Hz.
-    specialize (Hz x).
-    rewrite Hz lookup_op.
-    destruct (decide (x=l)); subst.
-    { rewrite lookup_singleton.
-      destruct (z !! l) eqn:E; rewrite E.
-      { by rewrite -Some_op left_id. }
-      { exfalso.
-        rewrite E in Hz. inversion Hz as [|Hz'].
-        symmetry in Hz'.
-        by apply not_elem_of_dom in Hz'. } }
-    { by rewrite lookup_singleton_ne // left_id. } }
+  intros x. rewrite left_id in Hz.
+  specialize (Hz x).
+  rewrite Hz lookup_op.
+  destruct (decide (x=l)); subst.
+  { rewrite lookup_singleton.
+    destruct (z !! l) eqn:E; rewrite E.
+    { by rewrite -Some_op left_id. }
+    { exfalso.
+      rewrite E in Hz. inversion Hz as [|Hz'].
+      symmetry in Hz'.
+      by apply not_elem_of_dom in Hz'. } }
+  { by rewrite lookup_singleton_ne // left_id. }
 Qed.
 
 (* We can get an empty mapsfrom from every allocated location. *)
@@ -1255,7 +1248,7 @@ Lemma ph_alloc σ l b :
   pointers b = ∅ →
   ph_interp σ ==∗
   ph_interp (<[l:=b]> σ) ∗
-  l ↦ b ∗ l ↤ ∅.
+  l ↦ b ∗ l ↤ ∅ ∗ meta_token l ⊤.
 Proof.
   intros Hσl ? Hpointers.
   rewrite /ph_interp.
@@ -1272,7 +1265,7 @@ Proof.
   (* We are now ready to update the ghost store, in two steps: *)
 
   (* Step 1. Extend the heap resource with a mapping of [l] to [b]. *)
-  iMod (gen_heap_alloc σ l b Hσl with "Hh") as "(Hh & Hlb & _)".
+  iMod (gen_heap_alloc σ l b Hσl with "Hh") as "(Hh & Hlb & ?)".
 
   (* Step 2. Move from [π] to [π'], which extends [pi] with a mapping of [l]
      to an empty multiset of predececessors. At the same time, we obtain the

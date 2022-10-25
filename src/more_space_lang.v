@@ -71,14 +71,14 @@ Definition diff_loc v1 v2 : Prop :=
   | val_loc l1, val_loc l2 => l1 ≠ l2
   | _,_ => True end.
 
-Lemma vmapsfrom_confront `{!interpGS Σ} v1 v2 q1 q2 ls1 ls2 b L :
+Lemma vmapsfrom_confront `{!interpGS Σ} v1 v2 q1 q2 ls1 ls2 :
   (is_loc v1 -> is_loc v2 -> 1 < q1 + q2)%Qz ->
-  v1 ↤?{q1} ls1 ∗ v2 ↤?{q2} ls2 =[ b | L ]=∗ v1 ↤?{q1} ls1 ∗ v2 ↤?{q2} ls2 ∗ ⌜diff_loc v1 v2⌝.
+  v1 ↤?{q1} ls1 ∗ v2 ↤?{q2} ls2 -∗ ⌜diff_loc v1 v2⌝.
 Proof.
-  iIntros (Hq) "(? & ?)". iIntros.
+  iIntros (Hq) "(? & ?)".
   destruct v1; try (simpl; iFrame; iPureIntro; easy).
   destruct v2; try (simpl; iFrame; iPureIntro; easy).
-  iMod (mapsfrom_confront with "[$] [$]") as "(? & ? & ? & %Hneq)".
+  iDestruct (mapsfrom_confront with "[$] [$]") as "%Hneq".
   { rewrite comm_L. eauto. }
   iFrame. eauto.
 Qed.

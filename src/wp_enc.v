@@ -321,13 +321,6 @@ Ltac use_conseq lemma :=
   first (eauto using lemma);
   iFrame.
 
-Lemma wp_enc_vmapsfrom_confront `{Enc A} v1 v2 q1 q2 ls1 ls2 b t (Q : A → iProp Σ) :
-  (is_loc v1 -> is_loc v2 -> 1 < q1 + q2)%Qz ->
-  v1 ↤?{q1} ls1 ∗ v2 ↤?{q2} ls2 -∗
-  (v1 ↤?{q1} ls1 ∗ v2 ↤?{q2} ls2 ∗ ⌜diff_loc v1 v2⌝  -∗ wp_enc b t Q) -∗
-  wp_enc b t Q.
-Proof. use_conseq vmapsfrom_confront. Qed.
-
 Lemma wp_enc_cleanup_vsingleton `{Enc A} l' v q ls b t (Q : A → iProp Σ) :
   v ↤?{q} ls ∗ †l' -∗
   (v ↤?{q} (ls ⊎ {[-l'-]}) ∗ †l' -∗ wp_enc b t Q) -∗
