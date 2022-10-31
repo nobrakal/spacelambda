@@ -38,23 +38,23 @@ Import ListsOf.
 
 Definition list_iter_aux_spec {A}
   f (I:list A -> iProp Σ) (R:A -> val -> iProp Σ) l (args:list val) t spec : iProp Σ:=
-  ∀ xs ys (lst:loc),
+  ∀ xs (lst:loc),
   ⌜args = [lst:val]⌝ -∗
-  ListOf R xs lst ∗ I ys -∗
+  ListOf R xs lst ∗ I xs.*1 -∗
   wps (Some {[lst;f;l]}) t
-  (fun _:unit => spec ∗ ListOf R xs lst ∗ I (ys ++ xs.*1)).
+  (fun _:unit => spec ∗ ListOf R xs lst ∗ I []).
 
 Local Instance lne_list_iter_aux_spec {A} f (I:list A -> iProp Σ) (R:A -> val -> iProp Σ) :
   LNE (list_iter_aux_spec f I R).
 Proof. lne. Qed.
 
 Lemma prove_list_iter_aux {A} lst f q l (I:list A -> iProp Σ) (R:A -> val -> iProp Σ) :
-  □(∀ x y k, I k ∗ R x y -∗ wps (Some ({[f]} ∪ locs y)) (call_clo (#f)%V [[y]])%T (fun _:unit => R x y ∗ I (k ++ [x]))) -∗
+  □(∀ x y k, I (x :: k) ∗ R x y -∗ wps (Some ({[f]} ∪ locs y)) (call_clo (#f)%V [[y]])%T (fun _:unit => R x y ∗ I k)) -∗
   Spec 1 [((#f)%V, q)] (list_iter_aux_spec f I R) l -∗
   list_iter_aux_spec f I R l [lst:val] (list_iter_aux l lst f)%T (Spec 1 [((#f)%V, q)] (list_iter_aux_spec f I R) l).
 Proof.
   iIntros "#Hf Hclo".
-  iIntros (xs ys llst) "%E (? & HI)". injection E. intros ->. clear E.
+  iIntros (xs llst) "%E (? & HI)". injection E. intros ->. clear E.
   unfold list_iter_aux.
   destruct xs as [|(x,(qp,qz)) xs].
   { wps_bind.
@@ -83,7 +83,6 @@ Proof.
     { set_solver. }
 
     iDestruct ("Hf" with "[$]") as "Hcall".
-    auto_locs.
     iApply (@wps_mono_val with "[$]").
 
     iIntros (_) "(? & ?) ?".
@@ -98,20 +97,20 @@ Proof.
     iApply (@wps_mono with "[$]").
 
     iIntros (_) "(? & ? & ?) ? ?".
-    rewrite -app_assoc cons_middle. iFrame.
+    iFrame.
     iExists _,_. iFrame. }
   Unshelve. easy.
 Qed.
 
-Lemma iter_spec {A} (I : list A -> iProp Σ) (R: A -> val -> iProp Σ) xs l f q :
+Lemma iter_spec_remaining {A} (I : list A -> iProp Σ) (R: A -> val -> iProp Σ) xs l f q :
   q ≠ 0%Qz ->
   CODE (list_iter [[#f , l]])
   SOUV ({[l;f]})
   PRE (
-  □(∀ x y k, I k ∗ R x y -∗
-      wpc ({[f]} ∪ locs y) (call_clo (#f)%V [[y]])%T (fun _:unit => R x y ∗ I (k ++ [x]))) ∗
-    ♢ 2 ∗ ListOf R xs l ∗ I nil ∗ f ↤{q} ∅)
-  POST (fun _:unit => ♢ 2 ∗ ListOf R xs l ∗ I (xs.*1)).
+  □(∀ x y k, I (x :: k) ∗ R x y -∗
+      wpc ({[f]} ∪ locs y) (call_clo (#f)%V [[y]])%T (fun _:unit => R x y ∗ I k)) ∗
+    ♢ 2 ∗ ListOf R xs l ∗ I xs.*1 ∗ f ↤{q} ∅)
+  POST (fun _:unit => ♢ 2 ∗ ListOf R xs l ∗ I [] ∗ f ↤{q} ∅).
 Proof.
   iIntros (?) "(#Hf & Hdiams & ? & ? & Hmf)".
   wps_call.
@@ -154,6 +153,33 @@ Proof.
   rew_qz. iIntros "(? & (? & _))". simpl.
 
   iStepsS. easy.
+Qed.
+
+Lemma iter_spec {A} (I : list A -> iProp Σ) (R: A -> val -> iProp Σ) xs l f q :
+  q ≠ 0%Qz ->
+  CODE (list_iter [[#f , l]])
+  SOUV ({[l;f]})
+  PRE (
+  □(∀ x y k, I k ∗ R x y -∗
+      wpc ({[f]} ∪ locs y) (call_clo (#f)%V [[y]])%T (fun _:unit => R x y ∗ I (k ++ [x]))) ∗
+    ♢ 2 ∗ ListOf R xs l ∗ I nil ∗ f ↤{q} ∅)
+  POST (fun _:unit => ♢ 2 ∗ ListOf R xs l ∗ I xs.*1 ∗ f ↤{q} ∅).
+Proof.
+  iIntros (Hq) "(#Hf & D & Hl & I & P)".
+  pose (J := (λ zs, ∃ ys, I ys ∗ ⌜xs.*1 = ys ++ zs⌝)%I).
+  iPoseProof (iter_spec_remaining J R xs l f q Hq with "[$D $Hl $P I]") as "Hit".
+  - iSplit. 2: iExists []; iFrame; done.
+    iModIntro; iIntros (x y k) "(J & xy)".
+    iDestruct "J" as (zs) "(I & %Ex)".
+    iSpecialize ("Hf" $! x y zs with "[$]").
+    iApply (wpc_mono with "Hf").
+    iIntros ([]) "($ & I)".
+    iExists (zs ++ [x]); iFrame.
+    rewrite Ex -app_assoc //.
+  - iApply (wps_mono with "Hit").
+    iIntros (v) "($ & $ & J & $)".
+    iDestruct "J" as (zs) "(I & ->)".
+    rewrite app_nil_r //.
 Qed.
 
 End IterClo.

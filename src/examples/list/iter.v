@@ -44,14 +44,13 @@ Context `{interpGS Σ}.
 
 Import ListsOf.
 
-Lemma iter_spec_aux {A} ys (I:list A -> iProp Σ) (R:A -> val -> iProp Σ) xs l f :
-  □(∀ x y k, I k ∗ R x y -∗ wps (Some ({[f]} ∪ locs y)) (call_clo (#f)%V [[y]])%T (fun _ => R x y ∗ I (k ++ [x]))) -∗
-  ListOf R xs l ∗ I ys -∗
-  wps (Some {[l;f]}) (list_iter [[#f , l]])%T (fun _ => ListOf R xs l ∗ I (ys ++ xs.*1)).
+Lemma iter_spec_aux {A} (I:list A -> iProp Σ) (R:A -> val -> iProp Σ) xs l f :
+  □(∀ x y k, I (x :: k) ∗ R x y -∗ wps (Some ({[f]} ∪ locs y)) (call_clo (#f)%V [[y]])%T (fun _ => R x y ∗ I k)) -∗
+  ListOf R xs l ∗ I xs.*1 -∗
+  wps (Some {[l;f]}) (list_iter [[#f , l]])%T (fun _ => ListOf R xs l ∗ I nil).
 Proof.
   iIntros "#Hf".
-  iRevert (ys l).
-  iInduction xs as [|(x,(qp,qz)) xs] "IH"; iIntros (ys l);
+  iInduction xs as [|(x,(qp,qz)) xs] "IH" forall (l);
     iIntros "(? & HI)"; wps_call; simplify_substs.
   { wps_bind.
     wps_apply (list_is_nil_spec A R l nil) as "(%Hv & ?)".
@@ -90,7 +89,7 @@ Proof.
     iApply (@wps_mono with "[$]").
 
     iIntros (_) "(? & ?) ? ?".
-    rewrite -app_assoc cons_middle. iFrame.
+    iFrame.
     iExists _,_. iFrame. }
 Qed.
 
@@ -104,15 +103,36 @@ Lemma iter_spec_update {A B} (I : list B -> iProp Σ) (R: A -> val -> iProp Σ) 
 specialize with R=R'
  *)
 
+Lemma iter_spec_remaining {A} (I : list A -> iProp Σ) (R: A -> val -> iProp Σ) xs l f :
+  □(∀ x y k, I (x :: k) ∗ R x y -∗
+      wps (Some ({[f]} ∪ locs y)) (call_clo (#f)%V [[y]])%T (fun _ => R x y ∗ I k)) -∗
+  ListOf R xs l ∗ I xs.*1 -∗
+  wps (Some {[l;f]}) (list_iter [[#f , l]])%T (fun _ => ListOf R xs l ∗ I nil).
+Proof.
+  iApply iter_spec_aux.
+Qed.
+
 Lemma iter_spec {A} (I : list A -> iProp Σ) (R: A -> val -> iProp Σ) xs l f :
   □(∀ x y k, I k ∗ R x y -∗
       wps (Some ({[f]} ∪ locs y)) (call_clo (#f)%V [[y]])%T (fun _ => R x y ∗ I (k ++ [x]))) -∗
   ListOf R xs l ∗ I nil -∗
   wps (Some {[l;f]}) (list_iter [[#f , l]])%T (fun _ => ListOf R xs l ∗ I (xs.*1)).
 Proof.
-  iIntros.
-  iDestruct (iter_spec_aux nil with "[$] [$]") as "?". simpl.
-  iFrame.
+  iIntros "#Hf (Hl & I)".
+  pose (J := (λ zs, ∃ ys, I ys ∗ ⌜xs.*1 = ys ++ zs⌝)%I).
+  iPoseProof (iter_spec_remaining J R xs l f with "[] [$Hl I]") as "Hit".
+  - iModIntro; iIntros (x y k) "(J & xy)".
+    iDestruct "J" as (zs) "(I & %Ex)".
+    iSpecialize ("Hf" $! x y zs with "[$]").
+    iApply (wps_mono with "Hf").
+    iIntros (?) "($ & I)".
+    iExists (zs ++ [x]); iFrame.
+    rewrite Ex -app_assoc //.
+  - iExists []; auto.
+  - iApply (wps_mono with "Hit").
+    iIntros (v) "($ & J)".
+    iDestruct "J" as (zs) "(I & ->)".
+    rewrite app_nil_r //.
 Qed.
 
 Lemma length_spec  {A} (R: A -> val -> iProp Σ) xs l :
