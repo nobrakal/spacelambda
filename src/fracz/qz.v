@@ -159,11 +159,30 @@ Qed.
 Global Instance Qz_lt_pi p q : ProofIrrel (p < q).
 Proof. destruct p, q; apply _. Qed.
 
+Definition Qc_max (q p : Qc) : Qc := if decide (q ≤ p)%Qc then p else q.
+Definition Qc_min (q p : Qc) : Qc := if decide (q ≤ p)%Qc then q else p.
 Definition Qz_max (q p : Qz) : Qz := if decide (q ≤ p) then p else q.
 Definition Qz_min (q p : Qz) : Qz := if decide (q ≤ p) then q else p.
 
 Infix "`max`" := Qz_max : Qz_scope.
 Infix "`min`" := Qz_min : Qz_scope.
+
+Infix "`max`" := Qc_max : Qc_scope.
+Infix "`min`" := Qc_min : Qc_scope.
+
+Lemma Qz_to_Qc_inj_max (p q : Qz) : (Qz_to_Qc (p `max` q) = Qz_to_Qc p `max` Qz_to_Qc q)%Qc.
+Proof.
+  destruct p, q. unfold Qc_max, Qz_max. simpl.
+  pose Qz_to_Qc_inj_le.
+  do 2 case_decide; tauto.
+Qed.
+
+Lemma Qz_to_Qc_inj_min (p q : Qz) : (Qz_to_Qc (p `min` q) = Qz_to_Qc p `min` Qz_to_Qc q)%Qc.
+Proof.
+  destruct p, q. unfold Qc_min, Qz_min. simpl.
+  pose Qz_to_Qc_inj_le.
+  do 2 case_decide; tauto.
+Qed.
 
 Global Instance Qz_inhabited : Inhabited Qz := populate 1.
 
@@ -771,11 +790,47 @@ Proof.
   f_equal. lia.
 Qed.
 
+Lemma Z2Qc_inj_max (x y:Z) : Qc_of_Z (x `max` y) = (Qc_of_Z x `max` Qc_of_Z y)%Qc.
+Proof.
+  pose proof Z2Qc_inj_le.
+  unfold Qc_max.
+  destruct (decide _) as [h|h].
+  - rewrite Z.max_r; firstorder.
+  - rewrite Z.max_l; auto. apply Z.lt_le_incl, Z.nle_gt. firstorder.
+Qed.
+
+Lemma Z2Qc_inj_min (x y:Z) : Qc_of_Z (x `min` y) = (Qc_of_Z x `min` Qc_of_Z y)%Qc.
+Proof.
+  pose proof Z2Qc_inj_le.
+  unfold Qc_min.
+  destruct (decide _) as [h|h].
+  - rewrite Z.min_l; firstorder.
+  - rewrite Z.min_r; auto. apply Z.lt_le_incl, Z.nle_gt. firstorder.
+Qed.
+
+Lemma nat_to_Qz_max (x y:nat) : nat_to_Qz (x `max` y) = (nat_to_Qz x `max` nat_to_Qz y)%Qz.
+Proof.
+  apply Qz_to_Qc_inj_iff.
+  rewrite Qz_to_Qc_inj_max, nat_to_Qz_to_Qc.
+  simpl. rewrite <- Z2Qc_inj_max.
+  f_equal. lia.
+Qed.
+
+Lemma nat_to_Qz_min (x y:nat) : nat_to_Qz (x `min` y) = (nat_to_Qz x `min` nat_to_Qz y)%Qz.
+Proof.
+  apply Qz_to_Qc_inj_iff.
+  rewrite Qz_to_Qc_inj_min, nat_to_Qz_to_Qc.
+  simpl. rewrite <- Z2Qc_inj_min.
+  f_equal. lia.
+Qed.
+
 (* This tries to move a Qz equality to nat. *)
 Ltac rew_qz_step tac :=
   first [ rewrite <- nat_to_Qz_mul
         | rewrite <- nat_to_Qz_add
         | rewrite <- nat_to_Qz_sub; [|tac]
+        | rewrite <- nat_to_Qz_min
+        | rewrite <- nat_to_Qz_max
     ].
 Ltac rew_qz_rel_step tt :=
   first [ rewrite nat_to_Qz_inj_iff
