@@ -1,7 +1,7 @@
 From stdpp Require Import decidable binders gmultiset.
 From iris Require Import proofmode.proofmode algebra.gmap.
 From spacelambda Require Import language.notation more_space_lang wp_all triple.
-From spacelambda.examples Require Import tactics utils diaframe vector.
+From spacelambda.examples Require Import tactics utils vector vector_amortized.
 
 (** Examples for non-amortized specifications *)
 

@@ -1,14 +1,9 @@
 From stdpp Require Import decidable binders gmultiset.
-From iris.proofmode Require Import proofmode environments.
-
-From iris.algebra Require Import gmap.
-
-From spacelambda.language Require Import notation.
-
-From spacelambda Require Import more_space_lang wp_all wp_spec triple closure.
-
-From spacelambda.examples Require Export tactics utils diaframe list.list list.iter_clo.
-From spacelambda.examples Require Export vector.
+From iris Require Import proofmode.proofmode algebra.gmap.
+From spacelambda Require Import more_space_lang wp_all wp_spec triple.
+From spacelambda.language Require Import notation closure.
+From spacelambda.examples Require Import tactics utils vector vector_amortized.
+From spacelambda.examples.list Require Import list iter_clo.
 
 Import language.
 Import notation.
@@ -53,7 +48,7 @@ Proof.
   induction ij; firstorder.
 Qed.
 
-Lemma edge_bound_nodes G i j : has_edge G i j -> i < size G /\ j < size G.
+Lemma edge_bounds G i j : has_edge G i j -> i < size G /\ j < size G.
 Proof.
   destruct G as [l wf].
   rewrite /has_edge /= /size /graph_size /= //.
@@ -67,14 +62,14 @@ Proof.
   - inversion 1.
 Qed.
 
-Lemma edge_inbound_node G i j : has_edge G i j -> i < size G.
+Lemma edge_inbound G i j : has_edge G i j -> i < size G.
 Proof.
-  apply edge_bound_nodes.
+  apply edge_bounds.
 Qed.
 
-Lemma edge_outbound_node G i j : has_edge G i j -> j < size G.
+Lemma edge_outbound G i j : has_edge G i j -> j < size G.
 Proof.
-  apply edge_bound_nodes.
+  apply edge_bounds.
 Qed.
 
 Definition count `{EqDecision A} (x : A) (l : list A) : nat := length (filter (eq x) l).
@@ -196,7 +191,7 @@ Proof.
   - intros i. rewrite elem_of_list_singleton =>->.
     rewrite list_lookup_total_insert // replicate_length; lia.
   - intros i Hi Ci. apply Htrue in Ci; auto. subst. constructor. auto.
-  - intros i Hi Ci ij. apply Htrue in Ci. 2: now eapply edge_inbound_node; eauto.
+  - intros i Hi Ci ij. apply Htrue in Ci. 2: now eapply edge_inbound; eauto.
     left. apply elem_of_list_singleton, Ci.
   - rewrite initial_measure /= //. lia.
   - apply NoDup_singleton.
@@ -210,8 +205,8 @@ Lemma inv_push_and_mark G a marked stack E i j measure :
   inv G a (<[j:=true]> marked) (stack ++ [j]) E measure.
 Proof.
   intros Ci ij [] H0.
-  assert (i < size G) as Ni by now eapply edge_inbound_node; eauto.
-  assert (j < size G) as Nj by now eapply edge_outbound_node; eauto.
+  assert (i < size G) as Ni by now eapply edge_inbound; eauto.
+  assert (j < size G) as Nj by now eapply edge_outbound; eauto.
   assert (j < length marked) by now rewrite -inv_length_marked0 in Nj.
   split; auto.
   - rewrite insert_length //.
@@ -224,7 +219,7 @@ Proof.
       * rewrite list_lookup_total_insert //.
       * rewrite list_lookup_total_insert_ne //.
     + apply elem_of_list_singleton in jk; subst. split.
-      * eapply edge_outbound_node; eauto.
+      * eapply edge_outbound; eauto.
       * rewrite list_lookup_total_insert //.
   - intros k Hk.
     destruct (decide (k = j)) as [->|kj].
@@ -338,6 +333,7 @@ Definition reachable_imperative : val :=
     "c".["b"].
 
 (** Change [wps X t Q] into two goals [wps X t R] and [∀v, Q v -∗ R v] *)
+Import environments.
 Ltac wps_conseq_post R :=
   match goal with
   | |- envs_entails ?Δ (wps ?X ?t ?Q) =>
@@ -740,7 +736,7 @@ Proof.
     assert (j < length marked) as Hj. {
       destruct Hinv.
       rewrite inv_length_marked0.
-      eapply edge_outbound_node; eauto.
+      eapply edge_outbound; eauto.
     }
     assert (j < length (Nat.b2n <$> marked)) as Hj' by rewrite map_length //.
 
