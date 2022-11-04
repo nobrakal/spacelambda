@@ -3,3 +3,4 @@ _opam
 _build
 Makefile.conf
 .lia.cache
+diaframe
