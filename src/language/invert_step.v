@@ -192,7 +192,7 @@ Proof.
       intros E; injection E; clear E.
     { intros _ ? Hd. apply step_no_val in Hd. subst. easy. }
     intros E.
-    assert (exists v, t0 = tm_val v) as (?,->).
+    assert (exists v, t = tm_val v) as (?,->).
     { apply (f_equal (lookup (length l))) in E.
       rewrite list_lookup_fmap, list_lookup_middle in E; try easy.
       destruct (vs !! length l); try easy. injection E.

@@ -18,8 +18,6 @@ Global Notation LNE f := (∀ a b c n, Proper (dist n ==> dist n) (f a b c)).
 Section Spec.
 Context `{interpGS Σ}.
 
-(* LATER make fractional *)
-
 Definition Spec_pre
   (arity : nat) (env: list (val * Qz)) (l:loc)
   (Spec : (loc -d> list val -d> tm -d> iPropO Σ -d> iPropO Σ) -d> iPropO Σ) : (loc -d> list val -d> tm -d> iPropO Σ -d> iPropO Σ) -d> iPropO Σ := λ P,

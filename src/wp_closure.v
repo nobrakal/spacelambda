@@ -650,7 +650,7 @@ Proof.
 
   unfold call_clo.
 
-  iApply (wp_bind_nofree _ (ctx_call1 (val_loc l::vals))).
+  iApply (wp_bind_nofree _ (ctx_call1 (tm_val <$> (val_loc l::vals)))).
 
   iApply (wp_mono with "[Hl]").
   iApply (wp_load with "[$]"). simpl. lia.

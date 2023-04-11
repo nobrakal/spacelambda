@@ -71,8 +71,8 @@ Proof. destruct t; simpl; lia. Qed.
 (* Contexts are non-recursive *)
 Inductive ctx :=
 | ctx_let : binder -> tm -> ctx (* let x = ◻ in t *)
-| ctx_call1 : list val -> ctx (* call ◻ vs *)
-| ctx_call2 : tm -> list val -> list tm -> ctx (* call t (vs ++ ◻ :: ts) *)
+| ctx_call1 : list tm -> ctx (* call ◻ ts *)
+| ctx_call2 : val -> list val -> list tm -> ctx (* call v (vs ++ ◻ :: ts) *)
 | ctx_bin_op1 : op -> tm -> ctx (* ◻ (op) t *)
 | ctx_bin_op2 : op -> val -> ctx (* v (op) ◻ *)
 | ctx_if : tm -> tm -> ctx (* if ◻ then t1 else t2 *)
@@ -87,7 +87,7 @@ Inductive ctx :=
 Definition fill_item (E:ctx) (t:tm) : tm :=
   match E with
   | ctx_let x t2 => tm_let x t t2
-  | ctx_call1 xs => tm_call t (tm_val <$> xs)
+  | ctx_call1 xs => tm_call t xs
   | ctx_call2 t1 xs ys => tm_call t1 ((tm_val <$> xs) ++ t :: ys)
   | ctx_bin_op1 op t2 => tm_bin_op op t t2
   | ctx_bin_op2 op v => tm_bin_op op (tm_val v) t
@@ -140,17 +140,6 @@ Proof.
   assert (Inj eq eq tm_val) as Hinj.
   { intros ? ? Heq'. injection Heq'. easy. }
   destruct E,E'; simpl in *; try congruence; injection Heq; intros; subst; try easy.
-  { apply fmap_inj in H1; subst; easy. }
-  { exfalso.
-    apply middle_list in H1.
-    rewrite fmap_length, list_lookup_fmap in H1.
-    destruct (l !! length l0); try easy. injection H1. intros <-.
-    simpl in *. congruence. }
-  { exfalso. symmetry in H1.
-    apply middle_list in H1.
-    rewrite fmap_length, list_lookup_fmap in H1.
-    destruct (l1 !! length l); try easy. injection H1. intros <-.
-    simpl in *. congruence. }
   { assert (length l = length l1).
     { eauto using ctx_list_length. }
     apply app_inj_1 in H1. 2:{ now do 2 rewrite fmap_length. }
@@ -238,7 +227,7 @@ Global Instance location_tm : Location tm := locs_tm.
 Definition locs_ctx (k:ctx) : gset loc :=
   match k with
   | ctx_let _ t2 => locs_tm t2
-  | ctx_call1 xs => ⋃ (locs_val <$> xs)
+  | ctx_call1 xs => ⋃ (locs_tm <$> xs)
   | ctx_call2 t1 xs ys => locs_tm t1 ∪ ⋃ (locs_val <$> xs) ∪ ⋃ (locs_tm <$> ys)
   | ctx_bin_op1 _ t2 => locs_tm t2
   | ctx_bin_op2 _ v => locs_val v
@@ -274,7 +263,6 @@ Lemma locs_fill_item E t :
 Proof.
   destruct E; try set_solver;
     unfold locs, location_tm; simpl.
-  { rewrite locs_fmap_vals. set_solver. }
   rewrite fmap_app, fmap_cons.
   rewrite union_list_app_L, union_list_cons.
   rewrite locs_fmap_vals.
